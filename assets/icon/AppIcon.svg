@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Zalo Switcher app icon. Master artwork: macOS grid, an 824 px body centred on a 1024 px canvas.
+       Render with assets/icon/make-icons.sh. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="100" x2="0" y2="924" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4FA8FF"/>
+      <stop offset="1" stop-color="#1A4FE0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="512" cy="120" r="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ink" x1="0" y1="480" x2="0" y2="680" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3A8DFF"/>
+      <stop offset="1" stop-color="#1A4FE0"/>
+    </linearGradient>
+    <filter id="iconShadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="12"/>
+      <feOffset dy="10"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.30"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="bubbleShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="16"/>
+      <feOffset dy="14"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.04  0 0 0 0 0.12  0 0 0 0 0.45  0 0 0 0.40 0"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#iconShadow)">
+    <path d="M382.8 100.0 H641.2 C722.6 100.0 763.3 100.0 800.1 112.1 L807.2 113.9 C855.0 131.3 892.7 169.0 910.1 216.8 L911.9 223.9 C924.0 260.7 924.0 301.4 924.0 382.8 V641.2 C924.0 722.6 924.0 763.3 911.9 800.1 L910.1 807.2 C892.7 855.0 855.0 892.7 807.2 910.1 L800.1 911.9 C763.3 924.0 722.6 924.0 641.2 924.0 H382.8 C301.4 924.0 260.7 924.0 223.9 911.9 L216.8 910.1 C169.0 892.7 131.3 855.0 113.9 807.2 L112.1 800.1 C100.0 763.3 100.0 722.6 100.0 641.2 V382.8 C100.0 301.4 100.0 260.7 112.1 223.9 L113.9 216.8 C131.3 169.0 169.0 131.3 216.8 113.9 L223.9 112.1 C260.7 100.0 301.4 100.0 382.8 100.0 Z" fill="url(#bg)"/>
+    <path d="M382.8 100.0 H641.2 C722.6 100.0 763.3 100.0 800.1 112.1 L807.2 113.9 C855.0 131.3 892.7 169.0 910.1 216.8 L911.9 223.9 C924.0 260.7 924.0 301.4 924.0 382.8 V641.2 C924.0 722.6 924.0 763.3 911.9 800.1 L910.1 807.2 C892.7 855.0 855.0 892.7 807.2 910.1 L800.1 911.9 C763.3 924.0 722.6 924.0 641.2 924.0 H382.8 C301.4 924.0 260.7 924.0 223.9 911.9 L216.8 910.1 C169.0 892.7 131.3 855.0 113.9 807.2 L112.1 800.1 C100.0 763.3 100.0 722.6 100.0 641.2 V382.8 C100.0 301.4 100.0 260.7 112.1 223.9 L113.9 216.8 C131.3 169.0 169.0 131.3 216.8 113.9 L223.9 112.1 C260.7 100.0 301.4 100.0 382.8 100.0 Z" fill="url(#glow)"/>
+  </g>
+
+  <g transform="translate(0 -16)">
+    <!-- A parked account: a chat bubble behind, tail to the lower left. -->
+    <path d="M352 262 H532 A120 120 0 0 1 652 382 V462 A120 120 0 0 1 532 582 H392 L300 650 L318 572 A120 120 0 0 1 232 462 V382 A120 120 0 0 1 352 262 Z"
+          fill="#FFFFFF" fill-opacity="0.45"/>
+    <g fill="#FFFFFF" fill-opacity="0.9">
+      <circle cx="352" cy="347" r="24"/>
+      <circle cx="432" cy="347" r="24"/>
+      <circle cx="512" cy="347" r="24"/>
+    </g>
+
+    <!-- The account in Zalo now: a chat bubble in front, tail to the lower right. -->
+    <path d="M492 432 H672 A120 120 0 0 1 792 552 V632 A120 120 0 0 1 706 747 L724 820 L632 752 H492 A120 120 0 0 1 372 632 V552 A120 120 0 0 1 492 432 Z"
+          fill="#FFFFFF" filter="url(#bubbleShadow)"/>
+
+    <!-- Switch arrows. -->
+    <g fill="none" stroke="url(#ink)" stroke-width="38" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M488 552 H684 M640 508 L684 552 L640 596"/>
+      <path d="M676 636 H480 M524 592 L480 636 L524 680"/>
+    </g>
+  </g>
+</svg>
