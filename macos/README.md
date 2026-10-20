@@ -11,9 +11,17 @@ swift build
 swift test      # runs the profile logic against a fake Zalo in a temporary folder
 scripts/build.sh      # builds "Zalo Switcher.app" and zalo-profiles into build/
 scripts/install.sh    # builds, installs into ~/Applications and ~/.local/bin, and opens the app
+scripts/release.sh    # builds and packs the zips and checksums for a GitHub release into build/release/
 ```
 
-The app gets an ad-hoc signature, so it runs on the Mac that built it. It isn't signed with a Developer ID or notarized.
+The binaries are universal (Apple silicon and Intel). The app gets an ad-hoc signature, so it runs on the Mac that built it. It isn't signed with a Developer ID or notarized, so a downloaded copy shows a security warning the first time it opens (the [main README](../README.md#the-security-warning-the-first-time) explains it).
+
+## Make a release
+
+1. Raise `VERSION` and `BUILD` at the top of `scripts/build.sh`.
+2. Run `scripts/release.sh`.
+3. Commit, push, and publish the files: `gh release create v<version> build/release/* --title "Zalo Switcher <version>" --notes-file <notes>`.
+4. Update the zip names in the main README's Install section.
 
 ## Code
 

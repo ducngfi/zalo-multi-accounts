@@ -45,7 +45,7 @@ What Zalo Switcher does is different: it keeps **several different accounts** on
 
 **Two windows at once is experimental.** See [Side by side](#side-by-side-experimental): voice and video calls only work reliably in one window.
 
-**You build it yourself.** There is no signed download yet. The install script builds the app on your Mac from this source code, so you need Apple's developer tools.
+**The download isn't notarized by Apple.** macOS shows a security warning the first time you open it. [The security warning](#the-security-warning-the-first-time) explains why and how to open it anyway.
 
 ## How switching works
 
@@ -84,7 +84,57 @@ The full rules, including the file formats, are in [docs/how-it-works.md](docs/h
 
 ## Install
 
-You need macOS 13 or later, the Zalo desktop app, and Apple's developer tools for `swift`: either Xcode, or the Command Line Tools (`xcode-select --install`).
+You need macOS 13 or later and the Zalo desktop app. Zalo Switcher runs on Apple silicon and Intel Macs.
+
+1. Download **Zalo-Switcher-1.0.0-macOS.zip** from the [latest release](https://github.com/ducngfi/zalo-multi-accounts/releases/latest).
+2. Open the zip (Safari opens it for you) and drag **Zalo Switcher.app** into your **Applications** folder.
+3. Open Zalo Switcher. The first time, macOS shows a security warning: see the next section.
+4. Look for the two-person icon at the top of the screen, and [save your first account](#use-it-from-the-menu-bar).
+
+### The security warning the first time
+
+macOS warns about any app that Apple hasn't checked (notarized). Notarizing needs a paid Apple Developer membership, which this free project doesn't have, so you see the warning once. It doesn't mean macOS found a problem in the app. All of its source code is in this repository; if you'd rather not trust a download, [build it yourself](#build-it-yourself).
+
+**macOS 15 Sequoia and later, including macOS 26 Tahoe:**
+
+1. Open the app. macOS says it can't verify that "Zalo Switcher" is free of malware. Click **Done**, not Move to Trash.
+2. Open **System Settings → Privacy & Security** and scroll down to **Security**. Next to the line saying "Zalo Switcher" was blocked, click **Open Anyway**.
+3. Click **Open Anyway** again in the dialog that appears, and confirm with your password or Touch ID.
+
+**macOS 13 Ventura and 14 Sonoma:**
+
+1. In Finder, open **Applications**, Control-click (or right-click) **Zalo Switcher** and choose **Open**.
+2. Click **Open** in the dialog that appears.
+
+**Any version, in Terminal:** this removes the "downloaded from the internet" mark that makes macOS check the app. Then open the app normally.
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Zalo Switcher.app"
+```
+
+You only do this once. macOS may ask again after you install a new version.
+
+### The command-line tool (optional)
+
+Download **zalo-profiles-1.0.0-macOS.zip** from the same release and open it, so that `zalo-profiles` is in your Downloads folder. Then, in Terminal:
+
+```bash
+mkdir -p ~/.local/bin
+mv ~/Downloads/zalo-profiles ~/.local/bin/
+xattr -c ~/.local/bin/zalo-profiles
+```
+
+The last line removes the download mark, which would otherwise make macOS block the command. If Terminal then says `command not found: zalo-profiles`, add the folder to your path and open a new Terminal window:
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+```
+
+To check a download, run `shasum -a 256 -c SHA256SUMS.txt` in the folder with the zips and the `SHA256SUMS.txt` from the release.
+
+### Build it yourself
+
+You need Apple's developer tools for `swift`: either Xcode, or the Command Line Tools (`xcode-select --install`).
 
 ```bash
 git clone https://github.com/ducngfi/zalo-multi-accounts.git
@@ -94,7 +144,7 @@ git clone https://github.com/ducngfi/zalo-multi-accounts.git
 zalo-multi-accounts/macos/scripts/install.sh
 ```
 
-This builds the app and the command, installs `~/Applications/Zalo Switcher.app` and `~/.local/bin/zalo-profiles`, and opens the app. To build without installing, run `macos/scripts/build.sh` (output in `macos/build/`).
+This builds the app and the command, installs `~/Applications/Zalo Switcher.app` and `~/.local/bin/zalo-profiles`, and opens the app. An app built on your own Mac opens without the security warning. To build without installing, run `macos/scripts/build.sh` (output in `macos/build/`).
 
 ## Use it from the menu bar
 

@@ -1,11 +1,16 @@
 #!/bin/bash
-# Builds "Zalo Switcher.app" (menu-bar app) and the zalo-profiles command into ./build.
+# Builds "Zalo Switcher.app" (menu-bar app) and the zalo-profiles command into ./build,
+# as universal binaries that run on both Apple silicon and Intel Macs.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-swift build -c release --product ZaloSwitcher
-swift build -c release --product zalo-profiles
-BIN="$(swift build -c release --show-bin-path)"
+VERSION="1.0.0"   # shown in Finder; raise it, and BUILD, for every release
+BUILD="1"
+
+ARCHS=(--arch arm64 --arch x86_64)
+swift build -c release "${ARCHS[@]}" --product ZaloSwitcher
+swift build -c release "${ARCHS[@]}" --product zalo-profiles
+BIN="$(swift build -c release "${ARCHS[@]}" --show-bin-path)"
 
 APP="build/Zalo Switcher.app"
 rm -rf "$APP"
@@ -14,7 +19,7 @@ cp "$BIN/ZaloSwitcher" "$APP/Contents/MacOS/ZaloSwitcher"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 cp "$BIN/zalo-profiles" build/zalo-profiles
 
-cat > "$APP/Contents/Info.plist" <<'PLIST'
+cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -32,9 +37,9 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>$VERSION</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>$BUILD</string>
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
     <key>LSUIElement</key>
@@ -45,7 +50,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
-# Ad-hoc signature, so macOS runs it on this Mac.
+# Ad-hoc signature, so macOS runs it on this Mac. It isn't notarized, so a downloaded copy gets
+# a security warning the first time it opens (the README explains how to open it).
 codesign --force --sign - "$APP"
 codesign --force --sign - build/zalo-profiles
 
