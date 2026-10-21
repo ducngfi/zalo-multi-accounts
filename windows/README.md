@@ -14,7 +14,7 @@ Một bản Windows nên:
 Chưa có điều nào dưới đây được kiểm tra trên Windows.
 
 - Zalo cho Windows lưu dữ liệu ở đâu, và mọi thứ (phiên đăng nhập, tin nhắn, ảnh, tệp) có nằm trong một thư mục như trên máy Mac không.
-- Có thể mở Zalo với một thư mục dữ liệu khác không; nếu được, việc chuyển hay mở cửa sổ thứ hai sẽ đơn giản hơn.
+- Có thể mở Zalo với một thư mục dữ liệu khác không. Nếu được, mỗi tài khoản có thể chạy trong một Zalo riêng như trên máy Mac; nếu không, bản Windows chỉ đổi qua lại từng tài khoản.
 - Làm sao biết Zalo có đang mở một thư mục dữ liệu, và làm sao cho Zalo thoát sạch sẽ. Đóng cửa sổ có thể chỉ ẩn Zalo xuống khay hệ thống, và Windows không cho đổi tên một thư mục khi có tệp bên trong đang mở.
 - Đổi tên: `MoveFileEx` không có `MOVEFILE_REPLACE_EXISTING` và không có `MOVEFILE_COPY_ALLOWED` sẽ thất bại thay vì thay thế hay sao chép sang ổ đĩa khác, đúng với quy tắc “chỉ đổi tên”.
 - Nên để hồ sơ ở đâu (ví dụ `%LOCALAPPDATA%\Zalo Profiles`), trên cùng ổ đĩa với dữ liệu Zalo.

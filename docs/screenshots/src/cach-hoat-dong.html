@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <title>Cách hoạt động</title>
-<!-- Diagram for the README: how switching and side-by-side work. Rendered to ../cach-hoat-dong.png
+<!-- Diagram for the README: how accounts run side by side. Rendered to ../cach-hoat-dong.png
      by ../make-screenshots.sh. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root { --ink: #16202e; --dim: #5d6878; --line: #dde3ec; --blue: #1a66f0; --blue-soft: #e8f0ff; --green: #13a35b; --green-soft: #e3f6ec; --amber-soft: #fff4e0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 1400px; height: 900px; }
+  html, body { width: 1400px; height: 820px; }
   body { font-family: "Be Vietnam Pro", sans-serif; color: var(--ink); background: #f6f8fb; padding: 44px 52px; }
   h1 { font-size: 30px; font-weight: 800; letter-spacing: -.3px; }
   .sub { font-size: 16px; color: var(--dim); margin-top: 6px; }
-  .steps { display: grid; grid-template-columns: 1fr 1.6fr 1fr; gap: 18px; margin-top: 30px; }
+  .steps { display: grid; grid-template-columns: 1.15fr 1.15fr 0.9fr; gap: 18px; margin-top: 30px; }
   .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px; position: relative; }
   .num { width: 30px; height: 30px; border-radius: 50%; background: var(--blue); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: 15px; }
   .card h2 { font-size: 19px; font-weight: 700; margin-top: 12px; }
@@ -38,53 +38,56 @@
   .win { flex: 1; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 13px; }
   .win .bar { background: #eef1f5; padding: 6px 10px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
   .win .bar i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #ff5f57; box-shadow: 12px 0 #febc2e, 24px 0 #28c840; margin-right: 28px; }
-  .win .in { padding: 10px; color: var(--dim); line-height: 1.5; }
+  .win .in { padding: 8px 10px; color: var(--dim); line-height: 1.5; }
+  .stack { display: grid; gap: 10px; margin-top: 14px; }
+  .stack .win { flex: none; }
+  .stack .bar b { margin-left: auto; font-size: 11px; color: var(--green); background: var(--green-soft); padding: 1px 8px; border-radius: 999px; }
   .win code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; color: var(--ink); }
   .foot { margin-top: 18px; font-size: 13px; color: var(--dim); }
 </style>
 </head>
 <body>
-  <h1>Chuyển tài khoản = đổi chỗ thư mục dữ liệu</h1>
-  <div class="sub">Không sao chép, không xóa, không đăng xuất. Mỗi tài khoản giữ trọn bộ dữ liệu Zalo của riêng nó.</div>
+  <h1>Mỗi tài khoản một thư mục, một cửa sổ Zalo riêng</h1>
+  <div class="sub">Mọi tài khoản chạy cùng lúc và đều nhận tin nhắn. Không sao chép, không xóa, không phải đăng nhập lại.</div>
 
   <div class="steps">
     <div class="card">
       <div class="num">1</div>
-      <h2>Thoát Zalo</h2>
-      <p>Zalo được yêu cầu thoát như khi bạn bấm ⌘Q. Ứng dụng đợi Zalo và các tiến trình phụ đóng hẳn, không bao giờ buộc thoát. Nếu Zalo không thoát (đang gọi, đang mở hộp thoại), mọi thứ dừng lại và chưa có gì bị di chuyển.</p>
+      <h2>Mỗi tài khoản một thư mục dữ liệu</h2>
+      <div class="folders">
+        <div class="folder live"><span class="ic">📁</span><div><b>Cá nhân</b> · Zalo chính<br><code>~/Library/Application Support/ZaloData</code></div></div>
+        <div class="folder parked"><span class="ic">🗂️</span><div><b>Cửa hàng Hoa Mai</b><br><code>Zalo Profiles/cua-hang-hoa-mai/…/ZaloData</code></div></div>
+        <div class="folder parked"><span class="ic">🗂️</span><div><b>Công ty An Phát</b><br><code>Zalo Profiles/cong-ty-an-phat/…/ZaloData</code></div></div>
+      </div>
+      <p>Mỗi thư mục giữ phiên đăng nhập, tin nhắn, ảnh và tệp của riêng một tài khoản.</p>
     </div>
     <div class="card">
       <div class="num">2</div>
-      <h2>Đổi chỗ hai thư mục</h2>
-      <div class="folders">
-        <div class="folder live"><span class="ic">📁</span><div><b>Cá nhân</b> đang ở chỗ Zalo dùng<br><code>~/Library/Application Support/ZaloData</code></div></div>
-        <div class="arrow">↓ cất vào thư mục riêng của nó</div>
-        <div class="folder parked"><span class="ic">🗂️</span><div><code>Zalo Profiles/ca-nhan/…/ZaloData</code></div></div>
-        <div class="arrow">↑ đưa <b>Công ty An Phát</b> vào chỗ Zalo dùng</div>
-        <div class="folder parked"><span class="ic">🗂️</span><div><code>Zalo Profiles/cong-ty-an-phat/…/ZaloData</code></div></div>
+      <h2>Mỗi tài khoản một cửa sổ Zalo</h2>
+      <div class="stack">
+        <div class="win"><div class="bar"><i></i>Cá nhân<b>Đang mở</b></div><div class="in"><code>…/ZaloData</code> · mở như Zalo bình thường</div></div>
+        <div class="win"><div class="bar"><i></i>Cửa hàng Hoa Mai<b>Đang mở</b></div><div class="in"><code>CFFIXED_USER_HOME=Zalo Profiles/cua-hang-hoa-mai</code></div></div>
+        <div class="win"><div class="bar"><i></i>Công ty An Phát<b>Đang mở</b></div><div class="in"><code>CFFIXED_USER_HOME=Zalo Profiles/cong-ty-an-phat</code></div></div>
       </div>
-      <div class="rules"><span class="pill">Chỉ đổi tên thư mục</span><span class="pill">Tức thì, dù dữ liệu nhiều GB</span><span class="pill">Không tốn thêm dung lượng</span></div>
+      <p>Mỗi Zalo thêm vào được mở với “thư mục nhà” riêng, nên nó chỉ đọc và ghi thư mục của tài khoản mình.</p>
     </div>
     <div class="card">
       <div class="num">3</div>
-      <h2>Mở lại Zalo</h2>
-      <p>Zalo mở ra với tài khoản mới, đã đăng nhập sẵn, đủ tin nhắn, ảnh và tệp. Tài khoản vừa cất đi không bị đăng xuất: tin nhắn của nó sẽ về khi bạn chuyển lại, giống như khi máy Mac tắt một thời gian.</p>
+      <h2>Mở, đóng, mở lại</h2>
+      <p>Bấm <b>Mở</b> ở tài khoản nào thì tài khoản đó mở ra trong cửa sổ riêng, đã đăng nhập sẵn, còn các cửa sổ khác vẫn chạy. Đóng một cửa sổ không đăng xuất tài khoản: tin nhắn sẽ về khi bạn mở lại.</p>
+      <div class="rules"><span class="pill">Chạy cùng lúc</span><span class="pill">Không sao chép dữ liệu</span><span class="pill">Không đăng nhập lại</span></div>
     </div>
   </div>
 
   <div class="side">
     <div class="card">
-      <h2>Mở song song <span class="tag amber">Thử nghiệm</span></h2>
-      <p>Một cửa sổ Zalo thứ hai được mở với “thư mục nhà” riêng của tài khoản đó, nên nó đọc và ghi dữ liệu của chính nó, không đụng tới Zalo chính.</p>
-      <div class="wins">
-        <div class="win"><div class="bar"><i></i>Zalo chính</div><div class="in">Cá nhân<br><code>…/ZaloData</code></div></div>
-        <div class="win"><div class="bar"><i></i>Cửa sổ thứ hai</div><div class="in">Cửa hàng Hoa Mai<br><code>Zalo Profiles/cua-hang-hoa-mai/…</code></div></div>
-      </div>
-      <p>Gọi thoại và gọi video chỉ ổn định ở một cửa sổ tại một thời điểm.</p>
+      <h2>Đặt làm Zalo chính <span class="tag amber">Đổi chỗ thư mục</span></h2>
+      <p>Zalo chính là tài khoản mở ra khi bạn bấm biểu tượng Zalo trong Dock. Đổi Zalo chính là đổi tên hai thư mục trên cùng ổ đĩa: tức thì, không tốn thêm dung lượng. Hai cửa sổ liên quan đóng vài giây rồi tự mở lại; các cửa sổ khác vẫn chạy.</p>
+      <p>Gọi thoại và gọi video chỉ ổn định ở một cửa sổ Zalo tại một thời điểm.</p>
     </div>
     <div class="card">
       <h2>Sao lưu <span class="tag blue">Ổ cứng ngoài</span></h2>
-      <p>Zalo chỉ tạm đóng vài giây để chụp nhanh dữ liệu (bản chụp APFS gần như không tốn dung lượng), rồi tự mở lại. Việc sao chép sang ổ ngoài chạy ngầm, kiểm tra từng tệp, và giữ nguyên các liên kết cứng của Zalo nên bản sao lưu bằng đúng dung lượng gốc.</p>
+      <p>Chỉ cửa sổ của tài khoản đó tạm đóng vài giây để chụp nhanh dữ liệu (bản chụp APFS gần như không tốn dung lượng), rồi tự mở lại. Việc sao chép sang ổ ngoài chạy ngầm, kiểm tra từng tệp, và giữ nguyên các liên kết cứng của Zalo nên bản sao lưu bằng đúng dung lượng gốc.</p>
       <p>Khôi phục luôn tạo một tài khoản mới, không bao giờ ghi đè tài khoản đang có.</p>
     </div>
   </div>

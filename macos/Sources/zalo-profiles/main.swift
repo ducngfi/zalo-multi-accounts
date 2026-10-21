@@ -2,16 +2,19 @@ import Foundation
 import ZaloProfilesCore
 
 let usage = """
-zalo-profiles: giữ nhiều tài khoản Zalo trên một máy Mac và chuyển qua lại mà không cần đăng xuất.
+zalo-profiles: dùng nhiều tài khoản Zalo cùng lúc trên một máy Mac, mỗi tài khoản một cửa sổ Zalo riêng.
 
 Cách dùng:
-  zalo-profiles status                 Xem tài khoản đang mở trong Zalo, mọi tài khoản và dung lượng
-  zalo-profiles save <tên>             Lưu tài khoản đang mở trong Zalo
-  zalo-profiles add <tên>              Thêm tài khoản mới và chuyển sang (đăng nhập một lần)
-  zalo-profiles switch <tài khoản>     Thoát Zalo, đổi sang dữ liệu của <tài khoản>, mở lại Zalo
-        [--no-launch]                  ...và không mở lại Zalo
-  zalo-profiles open <tài khoản>       Mở <tài khoản> ở cửa sổ Zalo thứ hai (thử nghiệm)
-  zalo-profiles close <tài khoản>      Đóng cửa sổ Zalo đang mở <tài khoản>
+  zalo-profiles status                 Xem mọi tài khoản, tài khoản nào đang mở, và dung lượng
+  zalo-profiles open <tài khoản>       Mở <tài khoản> trong cửa sổ Zalo riêng, cùng lúc với các tài khoản khác
+  zalo-profiles open --all             Mở mọi tài khoản đã đăng nhập
+  zalo-profiles close <tài khoản>      Đóng cửa sổ Zalo của <tài khoản>
+  zalo-profiles close --all            Đóng mọi cửa sổ Zalo
+  zalo-profiles add <tên>              Thêm tài khoản mới và mở nó ở cửa sổ mới để đăng nhập
+        [--no-launch]                  ...và chưa mở
+  zalo-profiles save <tên>             Lưu tài khoản đang có trong Zalo chính
+  zalo-profiles main <tài khoản>       Đặt <tài khoản> làm Zalo chính, tài khoản mở ra khi bấm biểu tượng Zalo
+        [--no-launch]                  ...chỉ đổi chỗ thư mục, không mở lại cửa sổ nào
   zalo-profiles backup <tài khoản> <thư mục>
                                        Sao lưu tài khoản vào <thư mục>/Zalo Backups/
   zalo-profiles restore <thư mục sao lưu> <tên>
@@ -32,10 +35,11 @@ if let gigabytes = UserDefaults(suiteName: "local.zalo-switcher")?.object(forKey
 
 func describe(_ status: ProfileStatus) -> String {
     var parts: [String] = []
-    switch status.place {
-    case .main: parts.append(status.runningPID == nil ? "trong Zalo chính (chưa mở)" : "trong Zalo chính, đang chạy")
-    case .parked: parts.append(status.runningPID == nil ? "đã lưu" : "đang mở ở cửa sổ thứ hai")
-    case .new: parts.append("mới, chưa đăng nhập")
+    if status.place == .main { parts.append("Zalo chính") }
+    if let pid = status.runningPID {
+        parts.append("đang mở (pid \(pid))")
+    } else {
+        parts.append(status.place == .new ? "mới, chưa đăng nhập" : "đã đóng")
     }
     if let size = manager.dataSize(of: status) { parts.append(Disk.format(size)) }
     if let uid = status.zaloUserID { parts.append("ID Zalo \(uid)") }
@@ -45,16 +49,16 @@ func describe(_ status: ProfileStatus) -> String {
 func printStatus() {
     switch manager.mainSlot() {
     case .empty:
-        print("Zalo: chưa có dữ liệu (Zalo sẽ mở ở màn hình đăng nhập)")
+        print("Zalo chính: chưa có tài khoản (tài khoản mở đầu tiên sẽ thành Zalo chính)")
     case .unsaved:
         let uid = manager.mainZaloUserID().map { " (ID Zalo \($0))" } ?? ""
-        print("Zalo: một tài khoản chưa được lưu\(uid)")
-        print("      Hãy lưu trước:  zalo-profiles save \"<tên>\"")
+        let running = manager.mainZaloPID().map { ", đang mở (pid \($0))" } ?? ""
+        print("Zalo chính: một tài khoản chưa được lưu\(uid)\(running)")
+        print("            Hãy lưu:  zalo-profiles save \"<tên>\"")
     case .profile(let id):
         let name = manager.profiles().first { $0.id == id }?.name ?? id
-        print("Zalo: \(name)")
+        print("Zalo chính: \(name)")
     }
-    if let pid = manager.mainZaloPID() { print("      đang chạy (pid \(pid))") }
     if let free = manager.freeSpace() { print("Ổ đĩa: còn trống \(Disk.format(free))") }
     if let warning = manager.lowSpaceWarning() { print("Cảnh báo: \(warning)") }
     let statuses = manager.statuses()
@@ -63,14 +67,14 @@ func printStatus() {
         print("Chưa có tài khoản nào.")
         return
     }
-    print("Tài khoản:")
+    print("Tài khoản (\(statuses.filter(\.isOpen).count) đang mở):")
     var seen: [String: String] = [:]
     for status in statuses {
-        let mark = status.place == .main ? "*" : " "
+        let mark = status.isOpen ? "●" : "○"
         print(" \(mark) \(status.profile.name)  [\(status.profile.id)]  \(describe(status))")
         if let uid = status.zaloUserID {
             if let other = seen[uid] {
-                print("     lưu ý: cùng tài khoản Zalo với “\(other)”; đừng mở cả hai cùng lúc")
+                print("     lưu ý: cùng tài khoản Zalo với “\(other)”; không mở được cả hai cùng lúc")
             }
             seen[uid] = status.profile.name
         }
@@ -107,7 +111,8 @@ func main() -> Int32 {
     var args = Array(CommandLine.arguments.dropFirst())
     let noLaunch = args.contains("--no-launch")
     let force = args.contains("--force")
-    args.removeAll { $0 == "--no-launch" || $0 == "--force" }
+    let all = args.contains("--all")
+    args.removeAll { $0 == "--no-launch" || $0 == "--force" || $0 == "--all" }
     guard let command = args.first else {
         printStatus()
         return 0
@@ -134,30 +139,46 @@ func main() -> Int32 {
             print("Đã lưu tài khoản đang mở trong Zalo với tên “\(profile.name)” [\(profile.id)].")
         case "add":
             try need(1)
-            if manager.mainSlot() == .unsaved { throw ProfileError.currentDataNotSaved }
-            try checkSpace()
+            if !noLaunch { try checkSpace() }
             let profile = try manager.addProfile(named: rest[0])
             print("Đã thêm “\(profile.name)” [\(profile.id)].")
-            try manager.switchTo(profile.id, launch: !noLaunch) { print($0) }
-            if !noLaunch { print("Hãy đăng nhập tài khoản mới trong Zalo. Lần sau chuyển lại không cần đăng nhập nữa.") }
-        case "switch", "use":
-            try need(1)
-            let profile = try manager.find(rest[0])
-            try manager.switchTo(profile.id, launch: !noLaunch) { print($0) }
-            print("Zalo đang dùng “\(profile.name)”.")
-            if let warning = manager.lowSpaceWarning() { print("Cảnh báo: \(warning)") }
+            if !noLaunch {
+                try manager.open(profile.id)
+                print("Hãy đăng nhập tài khoản mới trong cửa sổ Zalo vừa mở. Lần sau mở lại không cần đăng nhập nữa.")
+            }
         case "open":
-            try need(1)
-            let profile = try manager.find(rest[0])
             try checkSpace()
-            try manager.openSideBySide(profile.id)
-            print("Đã mở “\(profile.name)” ở cửa sổ Zalo riêng.")
+            if all {
+                try need(0)
+                let opened = try manager.openAll { print($0) }
+                print(opened.isEmpty ? "Mọi tài khoản đã đăng nhập đều đang mở." : "Đã mở \(opened.count) tài khoản.")
+            } else {
+                try need(1)
+                let profile = try manager.find(rest[0])
+                try manager.open(profile.id)
+                print("Đã mở “\(profile.name)” trong cửa sổ Zalo riêng.")
+            }
             print("Lưu ý: gọi thoại và gọi video chỉ ổn định ở một cửa sổ Zalo tại một thời điểm.")
         case "close":
+            if all {
+                try need(0)
+                try manager.closeAll { print($0) }
+                print("Đã đóng mọi cửa sổ Zalo.")
+            } else {
+                try need(1)
+                let profile = try manager.find(rest[0])
+                try manager.close(profile.id)
+                print("Đã đóng “\(profile.name)”.")
+            }
+        case "main", "switch", "use":
             try need(1)
             let profile = try manager.find(rest[0])
-            try manager.close(profile.id)
-            print("Đã đóng “\(profile.name)”.")
+            if noLaunch {
+                try manager.switchTo(profile.id, launch: false) { print($0) }
+            } else {
+                try manager.makeMain(profile.id) { print($0) }
+            }
+            print("Zalo chính giờ là “\(profile.name)”.")
         case "backup":
             try need(2)
             let profile = try manager.find(rest[0])
@@ -179,9 +200,9 @@ func main() -> Int32 {
             print("Bản sao lưu “\(info.profileName)” lúc \(date): \(info.files) tệp, \(Disk.format(info.bytes)).")
             let cancel = cancelOnInterrupt()
             let profile = try manager.restore(from: folder, as: rest[1], progress: report, cancel: cancel)
-            print("\nĐã khôi phục thành “\(profile.name)” [\(profile.id)]. Chuyển sang hoặc mở song song để dùng.")
+            print("\nĐã khôi phục thành “\(profile.name)” [\(profile.id)]. Mở bằng:  zalo-profiles open \(profile.id)")
             if let original = manager.statuses().first(where: { $0.profile.id != profile.id && $0.zaloUserID == info.zaloUserID && info.zaloUserID != nil }) {
-                print("Lưu ý: “\(original.profile.name)” là cùng một tài khoản Zalo. Đừng mở cả hai cùng lúc.")
+                print("Lưu ý: “\(original.profile.name)” là cùng một tài khoản Zalo, nên không mở được cả hai cùng lúc.")
             }
         case "rename":
             try need(2)
@@ -195,7 +216,7 @@ func main() -> Int32 {
             print("Đã chuyển “\(profile.name)” vào Thùng rác\(trashed.map { " (\($0.path))" } ?? ""). Lấy lại từ Thùng rác nếu cần.")
         case "paths":
             print("Ứng dụng Zalo:   \(manager.layout.zaloApp.path)")
-            print("Dữ liệu Zalo:    \(manager.layout.liveData.path)")
+            print("Zalo chính:      \(manager.layout.liveData.path)")
             print("Các tài khoản:   \(manager.layout.profilesRoot.path)")
         case "help", "-h", "--help":
             print(usage)

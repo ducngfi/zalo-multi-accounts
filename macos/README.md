@@ -33,7 +33,7 @@ open -n "build/Zalo Switcher.app" --args --demo    # chạy thử với bốn t�
 
 ## Mã nguồn
 
-- `Sources/ZaloProfilesCore`: lưu trữ hồ sơ, chuyển tài khoản, sao lưu, điều khiển tiến trình Zalo, và dữ liệu giả lập cho bản demo.
+- `Sources/ZaloProfilesCore`: lưu trữ hồ sơ, mở và đóng từng tài khoản trong Zalo riêng, đặt Zalo chính, sao lưu, điều khiển tiến trình Zalo, và dữ liệu giả lập cho bản demo.
 - `Sources/zalo-profiles`: công cụ dòng lệnh.
 - `Sources/ZaloSwitcher`: ứng dụng AppKit với giao diện SwiftUI: cửa sổ chính (`MainView`), cài đặt (`SettingsView`), biểu tượng thanh menu và menu Dock (`Menus.swift`), và phần vẽ ảnh chụp màn hình (`Screenshots.swift`).
 - `Tests/ZaloProfilesCoreTests`: kiểm thử cho phần lõi.

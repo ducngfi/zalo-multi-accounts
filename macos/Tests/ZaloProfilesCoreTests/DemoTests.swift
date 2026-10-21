@@ -12,15 +12,20 @@ final class DemoTests: XCTestCase {
         let byName = Dictionary(uniqueKeysWithValues: statuses.map { ($0.profile.name, $0) })
         XCTAssertEqual(byName["Cá nhân"]?.place, .main)
         XCTAssertNotNil(byName["Cá nhân"]?.runningPID)
-        XCTAssertTrue(byName["Cửa hàng Hoa Mai"]?.isOpenSideBySide ?? false)
+        XCTAssertEqual(byName["Cửa hàng Hoa Mai"]?.place, .parked)
+        XCTAssertEqual(byName["Cửa hàng Hoa Mai"]?.isOpen, true)
         XCTAssertEqual(byName["Công ty An Phát"]?.place, .parked)
+        XCTAssertEqual(byName["Công ty An Phát"]?.isOpen, false)
         XCTAssertEqual(byName["Shop mới"]?.place, .new)
         XCTAssertEqual(manager.dataSize(of: try XCTUnwrap(byName["Cá nhân"])), 8_420_000_000)
 
-        // Switching works on the synthetic data, and sizes follow the data.
-        try manager.switchTo(try XCTUnwrap(byName["Công ty An Phát"]).profile.id)
-        let after = try XCTUnwrap(manager.statuses().first { $0.profile.name == "Công ty An Phát" })
-        XCTAssertEqual(after.place, .main)
-        XCTAssertEqual(manager.dataSize(of: after), 640_000_000)
+        // Opening and making another account the main one work on the synthetic data, and sizes
+        // follow the data.
+        try manager.makeMain(try XCTUnwrap(byName["Công ty An Phát"]).profile.id)
+        let after = Dictionary(uniqueKeysWithValues: manager.statuses().map { ($0.profile.name, $0) })
+        XCTAssertEqual(after["Công ty An Phát"]?.place, .main)
+        XCTAssertEqual(after["Cá nhân"]?.place, .parked)
+        XCTAssertEqual(after.values.filter(\.isOpen).count, 3)
+        XCTAssertEqual(manager.dataSize(of: try XCTUnwrap(after["Công ty An Phát"])), 640_000_000)
     }
 }

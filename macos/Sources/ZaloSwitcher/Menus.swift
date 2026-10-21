@@ -67,8 +67,9 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: "Zalo Switcher")
         button.image?.isTemplate = true
         button.imagePosition = .imageLeading
-        let name = model.currentName.map { " \($0)" } ?? ""
-        button.title = model.isDemo ? " Demo ·\(name)" : name
+        // The number of open Zalo windows.
+        let count = model.openCount > 0 ? " \(model.openCount)" : ""
+        button.title = model.isDemo ? " Demo ·\(count)" : count
     }
 
     func menuWillOpen(_ menu: NSMenu) {
@@ -94,7 +95,8 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         menu.addItem(ActionItem("Thoát Zalo Switcher") { NSApp.terminate(nil) })
     }
 
-    /// The accounts, to switch with one click, and the most common actions.
+    /// The accounts, each opened or brought forward with one click (a tick means open), and the
+    /// most common actions.
     private func addAccounts(to menu: NSMenu) {
         let idle = model.busy == nil
         if model.statuses.isEmpty {
@@ -103,33 +105,29 @@ final class StatusMenuController: NSObject, NSMenuDelegate {
         for status in model.statuses {
             var title = status.profile.name
             if let size = model.sizes[status.profile.id] { title += "  —  \(Disk.format(size))" }
-            if status.isOpenSideBySide { title += "  (đang mở ở cửa sổ thứ hai)" }
+            if status.place == .main { title += "  (Zalo chính)" }
             if status.place == .new { title += "  (chưa đăng nhập)" }
-            menu.addItem(ActionItem(title, enabled: idle && !status.isOpenSideBySide, checked: status.place == .main) { [model] in
-                model.switchTo(status)
+            menu.addItem(ActionItem(title, enabled: idle, checked: status.isOpen) { [model] in
+                model.open(status)
             })
         }
         menu.addItem(.separator())
-        menu.addItem(ActionItem("Thêm tài khoản…", enabled: idle) { [model] in model.addAccount() })
+        menu.addItem(ActionItem("Mở tất cả", enabled: idle && model.closedCount > 0) { [model] in model.openAll() })
 
-        let side = NSMenu()
-        side.autoenablesItems = false
-        for status in model.statuses where status.place != .main {
-            if status.isOpenSideBySide {
-                side.addItem(ActionItem("Hiện \(status.profile.name)") { [model] in model.openSideBySide(status) })
-                side.addItem(ActionItem("Đóng \(status.profile.name)") { [model] in model.close(status) })
-            } else {
-                side.addItem(ActionItem("Mở \(status.profile.name)") { [model] in model.openSideBySide(status) })
-            }
+        let open = model.statuses.filter(\.isOpen)
+        let close = NSMenu()
+        close.autoenablesItems = false
+        for status in open {
+            close.addItem(ActionItem(status.profile.name) { [model] in model.close(status) })
         }
-        side.addItem(.separator())
-        side.addItem(ActionItem("Thêm tài khoản ở cửa sổ thứ hai…") { [model] in model.addAccountSideBySide() })
-        side.addItem(.separator())
-        side.addItem(ActionItem("Gọi thoại và video chỉ ổn định ở một cửa sổ.", enabled: false) {})
-        let sideItem = NSMenuItem(title: "Mở song song (thử nghiệm)", action: nil, keyEquivalent: "")
-        sideItem.submenu = side
-        sideItem.isEnabled = idle
-        menu.addItem(sideItem)
+        close.addItem(.separator())
+        close.addItem(ActionItem("Đóng mọi cửa sổ Zalo…") { [model] in model.closeAll() })
+        let closeItem = NSMenuItem(title: "Đóng", action: nil, keyEquivalent: "")
+        closeItem.submenu = close
+        closeItem.isEnabled = idle && model.openCount > 0
+        menu.addItem(closeItem)
+
+        menu.addItem(ActionItem("Thêm tài khoản…", enabled: idle) { [model] in model.addAccount() })
     }
 }
 

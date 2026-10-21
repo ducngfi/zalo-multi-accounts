@@ -72,8 +72,8 @@ public enum Demo {
     }
 
     /// Builds a fresh pretend home with four synthetic accounts and returns a manager working on it:
-    /// "Cá nhân" in the main Zalo, "Cửa hàng Hoa Mai" open side by side, "Công ty An Phát" saved,
-    /// and "Shop mới" not logged in yet.
+    /// "Cá nhân" open in the main Zalo, "Cửa hàng Hoa Mai" open in a window of its own,
+    /// "Công ty An Phát" closed, and "Shop mới" not logged in yet.
     public static func makeManager(freeSpace: Int64 = 42_700_000_000) throws -> ProfileManager {
         let fm = FileManager.default
         let root = Self.root
@@ -105,7 +105,7 @@ public enum Demo {
             try manager.writeMarker(profile.id, in: layout.parkedData(profile.id))
             ids.append(profile.id)
         }
-        try manager.openSideBySide(ids[0])
+        try manager.open(ids[0])
         if var company = manager.loadProfile(ids[1]) {
             company.lastUsedAt = Date().addingTimeInterval(-3 * 86_400)
             try manager.saveProfile(company)

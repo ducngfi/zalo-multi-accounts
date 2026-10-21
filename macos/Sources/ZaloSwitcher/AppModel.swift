@@ -50,24 +50,29 @@ final class AppModel: ObservableObject {
         refresh()
     }
 
-    var currentName: String? {
+    /// The name of the account the normal Zalo app opens.
+    var mainName: String? {
         guard case .profile(let id) = mainSlot else { return nil }
         return statuses.first { $0.profile.id == id }?.profile.name
     }
 
+    /// How many Zalo windows are open, counting a normal Zalo holding an unsaved account.
+    var openCount: Int {
+        statuses.filter(\.isOpen).count + (mainSlot == .unsaved && mainRunning ? 1 : 0)
+    }
+
+    /// Saved accounts that have been logged in and aren't open.
+    var closedCount: Int {
+        statuses.filter { !$0.isOpen && $0.place != .new }.count
+    }
+
     var headline: String {
-        switch mainSlot {
-        case .empty: return "Zalo chính: chưa có tài khoản"
-        case .unsaved: return "Zalo chính: tài khoản chưa được lưu"
-        case .profile: return "Zalo chính: \(currentName ?? "?")"
-        }
+        if statuses.isEmpty { return "Chưa có tài khoản nào" }
+        return "\(openCount) trong \(statuses.count) tài khoản đang mở"
     }
 
     var subheadline: String {
-        var parts: [String] = []
-        if mainSlot != .empty { parts.append(mainRunning ? "Đang chạy" : "Chưa mở") }
-        if let freeSpace { parts.append("Ổ đĩa còn trống \(Disk.format(freeSpace))") }
-        return parts.joined(separator: " · ")
+        freeSpace.map { "Ổ đĩa còn trống \(Disk.format($0))" } ?? ""
     }
 
     func refresh() {
@@ -123,17 +128,11 @@ final class AppModel: ObservableObject {
 
     // MARK: - Actions
 
-    func switchTo(_ status: ProfileStatus) {
-        guard ensureCurrentIsSaved() else { return }
-        perform("Đang chuyển sang \(status.profile.name)…") { manager, progress in
-            try manager.switchTo(status.profile.id, progress: progress)
-        }
-    }
-
-    func openSideBySide(_ status: ProfileStatus) {
-        guard status.isOpenSideBySide || confirmDespiteLowSpace() else { return }
-        perform("Đang mở \(status.profile.name)…") { manager, _ in
-            try manager.openSideBySide(status.profile.id)
+    /// Opens the account in a Zalo window of its own, or brings its window forward.
+    func open(_ status: ProfileStatus) {
+        guard status.isOpen || confirmDespiteLowSpace() else { return }
+        perform(status.isOpen ? nil : "Đang mở \(status.profile.name)…") { manager, _ in
+            try manager.open(status.profile.id)
         }
     }
 
@@ -143,34 +142,56 @@ final class AppModel: ObservableObject {
         }
     }
 
-    func addAccount() {
-        guard ensureCurrentIsSaved(), confirmDespiteLowSpace() else { return }
-        guard let name = Prompt.text(
-            title: "Thêm tài khoản Zalo",
-            message: "Đặt tên cho tài khoản mới. Zalo sẽ khởi động lại ở màn hình đăng nhập; bạn chỉ cần đăng nhập một lần, sau này chuyển lại không cần đăng nhập nữa.",
-            placeholder: "Ví dụ: Cửa hàng"
-        ) else { return }
-        perform("Đang thêm \(name)…") { manager, progress in
-            let profile = try manager.addProfile(named: name)
-            try manager.switchTo(profile.id, progress: progress)
+    /// Opens every account that has been logged in. At login it doesn't ask about low space: it
+    /// opens the accounts the person uses anyway.
+    func openAll(asking: Bool = true) {
+        guard !asking || confirmDespiteLowSpace() else { return }
+        perform("Đang mở các tài khoản…") { manager, progress in
+            try manager.openAll(progress: progress)
         }
     }
 
-    func addAccountSideBySide() {
+    func closeAll() {
+        guard Prompt.confirm(
+            title: "Đóng mọi cửa sổ Zalo?",
+            message: "Mọi tài khoản đang mở sẽ thoát như khi bấm ⌘Q. Tin nhắn mới sẽ về khi bạn mở lại.",
+            button: "Đóng tất cả"
+        ) else { return }
+        perform("Đang đóng các tài khoản…") { manager, progress in
+            try manager.closeAll(progress: progress)
+        }
+    }
+
+    /// Adds an account and opens it in a new Zalo window at the login screen; the others keep running.
+    func addAccount() {
         guard confirmDespiteLowSpace() else { return }
         guard let name = Prompt.text(
-            title: "Thêm tài khoản ở cửa sổ thứ hai",
-            message: "Đặt tên cho tài khoản mới. Một cửa sổ Zalo thứ hai sẽ mở ở màn hình đăng nhập, còn cửa sổ hiện tại vẫn chạy bình thường.\n\nThử nghiệm: gọi thoại và gọi video chỉ ổn định ở một cửa sổ Zalo tại một thời điểm.",
-            placeholder: "Ví dụ: Công ty"
+            title: "Thêm tài khoản Zalo",
+            message: "Đặt tên cho tài khoản mới. Một cửa sổ Zalo mới sẽ mở ở màn hình đăng nhập, còn các tài khoản đang mở vẫn chạy bình thường. Bạn chỉ cần đăng nhập một lần; sau này mở lại không cần đăng nhập nữa.",
+            placeholder: "Ví dụ: Cửa hàng"
         ) else { return }
         perform("Đang thêm \(name)…") { manager, _ in
             let profile = try manager.addProfile(named: name)
-            try manager.openSideBySide(profile.id)
+            try manager.open(profile.id)
+        }
+    }
+
+    /// Makes the account the one the normal Zalo app opens, from the Dock, Launchpad or at login.
+    func makeMain(_ status: ProfileStatus) {
+        guard ensureMainIsSaved() else { return }
+        let current = mainName.map { "“\($0)”" } ?? "tài khoản Zalo chính hiện tại"
+        guard Prompt.confirm(
+            title: "Đặt “\(status.profile.name)” làm Zalo chính?",
+            message: "Zalo chính là tài khoản mở ra khi bạn bấm biểu tượng Zalo trong Dock, Launchpad hoặc khi Zalo tự mở cùng máy Mac. Cửa sổ của “\(status.profile.name)” và của \(current) sẽ đóng vài giây để đổi chỗ thư mục dữ liệu, rồi tự mở lại. Các cửa sổ khác vẫn chạy.",
+            button: "Đặt làm Zalo chính"
+        ) else { return }
+        perform("Đang đặt \(status.profile.name) làm Zalo chính…") { manager, progress in
+            try manager.makeMain(status.profile.id, progress: progress)
         }
     }
 
     func saveCurrent() {
-        _ = ensureCurrentIsSaved(asking: false)
+        _ = ensureMainIsSaved(asking: false)
     }
 
     func rename(_ status: ProfileStatus) {
@@ -206,7 +227,7 @@ final class AppModel: ObservableObject {
         if status.runningPID != nil {
             guard Prompt.confirm(
                 title: "Sao lưu “\(status.profile.name)”?",
-                message: "Zalo sẽ tạm đóng vài giây để chụp nhanh dữ liệu, rồi tự mở lại. Việc sao chép sang ổ đĩa chạy ngầm sau đó, trong lúc đó bạn vẫn dùng Zalo bình thường.",
+                message: "Cửa sổ Zalo của “\(status.profile.name)” sẽ tạm đóng vài giây để chụp nhanh dữ liệu, rồi tự mở lại; các tài khoản khác vẫn chạy. Việc sao chép sang ổ đĩa chạy ngầm sau đó, trong lúc đó bạn vẫn dùng Zalo bình thường.",
                 button: "Sao lưu"
             ) else { return }
         }
@@ -252,23 +273,19 @@ final class AppModel: ObservableObject {
         let date = info.createdAt.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened).locale(Self.vietnamese))
         guard let name = Prompt.text(
             title: "Khôi phục “\(info.profileName)” (\(date))",
-            message: "Bản sao lưu sẽ được khôi phục thành một tài khoản mới (\(Disk.format(info.bytes))); không tài khoản nào bị thay thế. Nếu tài khoản gốc vẫn còn trong danh sách, đừng mở cả hai cùng lúc.\n\nTên cho tài khoản khôi phục:",
+            message: "Bản sao lưu sẽ được khôi phục thành một tài khoản mới (\(Disk.format(info.bytes))); không tài khoản nào bị thay thế. Nếu tài khoản gốc vẫn còn trong danh sách, ứng dụng sẽ không cho mở cả hai cùng lúc.\n\nTên cho tài khoản khôi phục:",
             placeholder: "\(info.profileName) (khôi phục)", initial: "\(info.profileName) (khôi phục)"
         ) else { return }
         let cancel = CancelFlag()
         startCopy("Đang khôi phục \(name)…", cancel: cancel) { manager, progress in
             let profile = try manager.restore(from: folder, as: name, progress: progress, cancel: cancel)
-            return "Đã khôi phục thành “\(profile.name)”. Bấm “Chuyển sang” để dùng tài khoản này."
+            return "Đã khôi phục thành “\(profile.name)”. Bấm “Mở” để dùng tài khoản này."
         }
     }
 
     func cancelCopy() {
         copyCancel?.cancel()
         copying = "Đang dừng…"
-    }
-
-    func openZalo() {
-        perform(nil) { manager, _ in try manager.openMain() }
     }
 
     func showProfilesFolder() {
@@ -291,14 +308,15 @@ final class AppModel: ObservableObject {
 
     // MARK: - Helpers
 
-    /// When Zalo holds an account that isn't saved yet, asks for a name and saves it, so it is kept
-    /// when switching. Returns false if the person cancels or saving fails.
-    private func ensureCurrentIsSaved(asking: Bool = true) -> Bool {
+    /// When the normal Zalo holds an account that isn't saved yet, asks for a name and saves it, so
+    /// it is kept when another account moves into the main slot. Returns false if the person cancels
+    /// or saving fails.
+    private func ensureMainIsSaved(asking: Bool = true) -> Bool {
         guard mainSlot == .unsaved else { return true }
         let message = asking
-            ? "Tài khoản đang mở trong Zalo chưa được lưu. Hãy đặt tên cho nó, để tin nhắn và tệp của nó được giữ lại khi chuyển."
-            : "Đặt tên cho tài khoản đang mở trong Zalo. Zalo vẫn chạy bình thường."
-        guard let name = Prompt.text(title: "Lưu tài khoản Zalo hiện tại", message: message,
+            ? "Zalo chính đang giữ một tài khoản chưa được lưu. Hãy đặt tên cho nó, để tin nhắn và tệp của nó được giữ lại."
+            : "Đặt tên cho tài khoản đang có trong Zalo chính. Zalo vẫn chạy bình thường."
+        guard let name = Prompt.text(title: "Lưu tài khoản trong Zalo chính", message: message,
                                      placeholder: "Ví dụ: Cá nhân")
         else { return false }
         do {
@@ -334,7 +352,7 @@ final class AppModel: ObservableObject {
         }
     }
 
-    /// Runs a long copy (backup or restore) in the background; switching stays available meanwhile.
+    /// Runs a long copy (backup or restore) in the background; opening and closing stay available meanwhile.
     private func startCopy(_ label: String, cancel: CancelFlag,
                            _ action: @escaping (ProfileManager, @escaping (String) -> Void) throws -> String) {
         copying = label

@@ -28,7 +28,9 @@ struct SettingsView: View {
                         set: { on in
                             do { try settings.setOpenAtLogin(on) } catch { Prompt.error(error) }
                         }))
-                    Text("Khi tự mở cùng máy Mac, ứng dụng chạy nền và không hiện cửa sổ.")
+                    Toggle("Khi đó, mở mọi tài khoản đã đăng nhập", isOn: $settings.openAllAtLogin)
+                        .disabled(!settings.openAtLogin)
+                    Text("Khi tự mở cùng máy Mac, ứng dụng chạy nền, không hiện cửa sổ, và mở mỗi tài khoản trong một cửa sổ Zalo riêng.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -44,7 +46,7 @@ struct SettingsView: View {
                     LabeledContent("Các tài khoản đã lưu") {
                         Button("Mở trong Finder") { model.showProfilesFolder() }
                     }
-                    LabeledContent("Dữ liệu Zalo đang dùng") {
+                    LabeledContent("Dữ liệu của Zalo chính") {
                         Button("Mở trong Finder") { model.showZaloDataFolder() }
                     }
                 }
@@ -66,6 +68,6 @@ struct SettingsView: View {
                 .padding(14)
             }
         }
-        .frame(width: 560, height: showsDoneButton ? 640 : 720)
+        .frame(width: 560, height: showsDoneButton ? 640 : 750)
     }
 }

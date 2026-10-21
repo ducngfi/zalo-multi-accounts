@@ -1,7 +1,7 @@
 import SwiftUI
 import ZaloProfilesCore
 
-/// The main window: the account in Zalo now, every saved account, and what can be done with each.
+/// The main window: every saved account, which ones are open, and what can be done with each.
 struct MainView: View {
     @ObservedObject var model: AppModel
     @ObservedObject var settings: AppSettings
@@ -22,15 +22,16 @@ struct MainView: View {
                     ForEach(model.statuses, id: \.profile.id) { status in
                         AccountRow(model: model, status: status)
                     }
-                    Text("Mỗi lần chuyển tài khoản, Zalo khởi động lại trong vài giây và không cần đăng nhập lại. Khi mở song song, gọi thoại và gọi video chỉ ổn định ở một cửa sổ Zalo.")
+                    Text("Mỗi tài khoản chạy trong một cửa sổ Zalo riêng, cùng lúc với các tài khoản khác, và không cần đăng nhập lại. “Zalo chính” là tài khoản mở ra khi bạn bấm biểu tượng Zalo trong Dock. Gọi thoại và gọi video chỉ ổn định ở một cửa sổ Zalo tại một thời điểm.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 4)
                 }
                 .padding(20)
             }
         }
-        .frame(minWidth: 640, minHeight: 480)
+        .frame(minWidth: 680, minHeight: 480)
         .sheet(isPresented: $model.showingSettings) {
             SettingsView(model: model, settings: settings)
         }
@@ -48,10 +49,12 @@ struct MainView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
+            .lineLimit(1)
             Spacer(minLength: 12)
             Menu {
-                Button("Thêm và chuyển sang tài khoản mới…") { model.addAccount() }
-                Button("Thêm ở cửa sổ Zalo thứ hai…") { model.addAccountSideBySide() }
+                Button("Thêm tài khoản mới…") { model.addAccount() }
+                Button("Khôi phục từ bản sao lưu…") { model.restore() }
+                    .disabled(model.copying != nil)
             } label: {
                 Label("Thêm tài khoản", systemImage: "plus")
             } primaryAction: {
@@ -59,12 +62,18 @@ struct MainView: View {
             }
             .fixedSize()
             .disabled(model.busy != nil)
-            Button {
-                model.restore()
+            Menu {
+                Button("Mở mọi tài khoản đã đăng nhập") { model.openAll() }
+                    .disabled(model.closedCount == 0)
+                Button("Đóng mọi cửa sổ Zalo…") { model.closeAll() }
+                    .disabled(model.openCount == 0)
             } label: {
-                Label("Khôi phục…", systemImage: "clock.arrow.circlepath")
+                Label("Mở tất cả", systemImage: "rectangle.stack")
+            } primaryAction: {
+                model.openAll()
             }
-            .disabled(model.busy != nil || model.copying != nil)
+            .fixedSize()
+            .disabled(model.busy != nil || model.statuses.isEmpty)
             Button {
                 model.showingSettings = true
             } label: {
@@ -82,7 +91,7 @@ struct MainView: View {
         }
         if model.mainSlot == .unsaved {
             Banner(symbol: "exclamationmark.circle", tint: .orange,
-                   text: "Tài khoản đang mở trong Zalo chưa được lưu. Hãy lưu trước khi chuyển, để tin nhắn và tệp của nó được giữ lại.") {
+                   text: "Zalo chính đang giữ một tài khoản chưa được lưu nên tài khoản đó chưa có trong danh sách. Hãy lưu để quản lý, sao lưu và mở nó cùng các tài khoản khác.") {
                 Button("Lưu tài khoản này…") { model.saveCurrent() }
             }
         }
@@ -116,11 +125,15 @@ struct AccountRow: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            Avatar(name: status.profile.name)
+            Avatar(name: status.profile.name, isOpen: status.isOpen)
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
                     Text(status.profile.name).font(.headline)
-                    badge
+                    stateBadge
+                    if status.place == .main {
+                        Badge(text: "Zalo chính", color: .blue)
+                            .help("Tài khoản mở ra khi bạn bấm biểu tượng Zalo trong Dock, Launchpad, hoặc khi Zalo tự mở cùng máy Mac.")
+                    }
                 }
                 Text(details)
                     .font(.callout)
@@ -134,25 +147,15 @@ struct AccountRow: View {
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(status.place == .main ? Color.accentColor.opacity(0.7) : Color.primary.opacity(0.08),
-                              lineWidth: status.place == .main ? 1.5 : 1)
+                .strokeBorder(status.isOpen ? Color.green.opacity(0.6) : Color.primary.opacity(0.08),
+                              lineWidth: status.isOpen ? 1.5 : 1)
         )
     }
 
-    private var badge: some View {
-        let (text, color): (String, Color) = {
-            switch status.place {
-            case .main: return status.runningPID != nil ? ("Đang dùng", .green) : ("Zalo chính · chưa mở", .green)
-            case .parked: return status.isOpenSideBySide ? ("Cửa sổ thứ hai", .blue) : ("Đã lưu", .gray)
-            case .new: return ("Chưa đăng nhập", .orange)
-            }
-        }()
-        return Text(text)
-            .font(.caption.weight(.semibold))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 2)
-            .foregroundStyle(color)
-            .background(Capsule().fill(color.opacity(0.15)))
+    private var stateBadge: Badge {
+        if status.isOpen { return Badge(text: "Đang mở", color: .green) }
+        if status.place == .new { return Badge(text: "Chưa đăng nhập", color: .orange) }
+        return Badge(text: "Đã đóng", color: .gray)
     }
 
     private var details: String {
@@ -160,34 +163,32 @@ struct AccountRow: View {
         if let size = model.sizes[status.profile.id] { parts.append(Disk.format(size)) }
         if let uid = status.zaloUserID { parts.append("ID Zalo …\(uid.suffix(4))") }
         if status.place == .new { parts.append("Đăng nhập một lần khi mở lần đầu") }
-        if let used = status.profile.lastUsedAt, status.place == .parked, !status.isOpenSideBySide {
+        if let used = status.profile.lastUsedAt, !status.isOpen, status.place != .new {
             let formatter = RelativeDateTimeFormatter()
             formatter.locale = AppModel.vietnamese
-            parts.append("Dùng gần nhất \(formatter.localizedString(for: used, relativeTo: Date()))")
+            parts.append("Mở gần nhất \(formatter.localizedString(for: used, relativeTo: Date()))")
         }
         return parts.joined(separator: " · ")
     }
 
     @ViewBuilder private var actions: some View {
         HStack(spacing: 8) {
-            switch status.place {
-            case .main:
-                Button(model.mainRunning ? "Hiện Zalo" : "Mở Zalo") { model.openZalo() }
-            case .parked where status.isOpenSideBySide:
-                Button("Hiện") { model.openSideBySide(status) }
-                Button("Đóng cửa sổ") { model.close(status) }
-            case .parked, .new:
-                Button("Chuyển sang") { model.switchTo(status) }
+            if status.isOpen {
+                Button("Hiện") { model.open(status) }
+                Button("Đóng") { model.close(status) }
+            } else {
+                Button(status.place == .new ? "Mở để đăng nhập" : "Mở") { model.open(status) }
                     .buttonStyle(.borderedProminent)
-                Button("Mở song song") { model.openSideBySide(status) }
             }
             Menu {
                 Button("Sao lưu…") { model.backUp(status) }
                     .disabled(status.place == .new || model.copying != nil)
                 Button("Đổi tên…") { model.rename(status) }
+                Button("Đặt làm Zalo chính…") { model.makeMain(status) }
+                    .disabled(status.place == .main)
                 Divider()
                 Button("Chuyển vào Thùng rác…") { model.remove(status) }
-                    .disabled(status.place == .main || status.isOpenSideBySide)
+                    .disabled(status.place == .main || status.isOpen)
             } label: {
                 Image(systemName: "ellipsis.circle")
             }
@@ -196,6 +197,21 @@ struct AccountRow: View {
             .fixedSize()
         }
         .disabled(model.busy != nil)
+    }
+}
+
+/// A small coloured label next to an account's name.
+struct Badge: View {
+    let text: String
+    let color: Color
+
+    var body: some View {
+        Text(text)
+            .font(.caption.weight(.semibold))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
+            .foregroundStyle(color)
+            .background(Capsule().fill(color.opacity(0.15)))
     }
 }
 
@@ -251,9 +267,11 @@ struct ProgressBar: View {
     }
 }
 
-/// A round badge with the account's initials, in a colour that stays the same for a name.
+/// A round badge with the account's initials, in a colour that stays the same for a name, and a
+/// green dot while the account is open.
 struct Avatar: View {
     let name: String
+    var isOpen = false
 
     private static let colors: [Color] = [.blue, .teal, .orange, .pink, .purple, .green, .indigo, .red]
 
@@ -268,5 +286,13 @@ struct Avatar: View {
             .foregroundStyle(.white)
             .frame(width: 42, height: 42)
             .background(Circle().fill(Self.colors[index].gradient))
+            .overlay(alignment: .bottomTrailing) {
+                if isOpen {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 12, height: 12)
+                        .overlay(Circle().strokeBorder(Color(nsColor: .controlBackgroundColor), lineWidth: 2))
+                }
+            }
     }
 }

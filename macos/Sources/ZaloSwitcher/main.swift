@@ -1,12 +1,16 @@
 import AppKit
 
 // `--demo` runs the app on synthetic accounts in a temporary folder, without touching Zalo.
-// `--render-screenshots <folder>` draws the README screenshots from the demo data and exits.
+// `--render-screenshots <folder> [--only <name>]` draws the README screenshots from the demo data
+// and exits.
 let arguments = CommandLine.arguments
-let screenshotFolder = arguments.firstIndex(of: "--render-screenshots").flatMap { index in
-    index + 1 < arguments.count ? URL(fileURLWithPath: arguments[index + 1], isDirectory: true) : nil
+
+func value(after flag: String) -> String? {
+    arguments.firstIndex(of: flag).flatMap { $0 + 1 < arguments.count ? arguments[$0 + 1] : nil }
 }
-let mode: AppDelegate.Mode = screenshotFolder.map { .screenshots($0) }
+
+let screenshotFolder = value(after: "--render-screenshots").map { URL(fileURLWithPath: $0, isDirectory: true) }
+let mode: AppDelegate.Mode = screenshotFolder.map { .screenshots($0, only: value(after: "--only")) }
     ?? (arguments.contains("--demo") ? .demo : .normal)
 
 MainActor.assumeIsolated {

@@ -77,6 +77,18 @@ final class ProfileManagerTests: XCTestCase {
         if running { zalo.open[layout.liveData.path] = 1 }
     }
 
+    /// Gives a saved profile its own data, as if it had been logged in before.
+    @discardableResult
+    func makeParkedProfile(_ name: String, account: String) throws -> Profile {
+        let profile = try manager.addProfile(named: name)
+        let data = layout.parkedData(profile.id)
+        let db = data.appendingPathComponent("Database/_production/\(account)")
+        try fm.createDirectory(at: db, withIntermediateDirectories: true)
+        try Data("session of \(account)".utf8).write(to: data.appendingPathComponent("Cookies"))
+        try manager.writeMarker(profile.id, in: data)
+        return profile
+    }
+
     func liveSession() -> String? {
         try? String(contentsOf: layout.liveData.appendingPathComponent("Cookies"), encoding: .utf8)
     }
@@ -176,14 +188,14 @@ final class ProfileManagerTests: XCTestCase {
         XCTAssertEqual(liveSession(), "session of 111111")
     }
 
-    func test_switchToAProfileOpenSideBySideIsRefused() throws {
+    func test_switchToAProfileOpenInItsOwnWindowIsRefused() throws {
         try makeLiveData(account: "111111")
         try manager.saveCurrent(as: "Personal")
         let shop = try manager.addProfile(named: "Shop")
-        try manager.openSideBySide(shop.id)
+        try manager.open(shop.id)
 
         XCTAssertThrowsError(try manager.switchTo(shop.id)) {
-            XCTAssertEqual($0 as? ProfileError, .openSideBySide("Shop"))
+            XCTAssertEqual($0 as? ProfileError, .isOpen("Shop"))
         }
         XCTAssertEqual(liveSession(), "session of 111111")
     }
@@ -195,7 +207,7 @@ final class ProfileManagerTests: XCTestCase {
         XCTAssertEqual(manager.mainSlot(), .profile("personal"))
     }
 
-    func test_openSideBySidePreparesASeparateHome() throws {
+    func test_openPreparesASeparateHome() throws {
         let home = layout.realHome
         try fm.createDirectory(at: home.appendingPathComponent("Library/Keychains"), withIntermediateDirectories: true)
         try fm.createDirectory(at: home.appendingPathComponent("Downloads"), withIntermediateDirectories: true)
@@ -203,7 +215,7 @@ final class ProfileManagerTests: XCTestCase {
         try manager.saveCurrent(as: "Personal")
         let shop = try manager.addProfile(named: "Shop")
 
-        try manager.openSideBySide(shop.id)
+        try manager.open(shop.id)
 
         let profileHome = layout.profileHome(shop.id)
         XCTAssertTrue(fm.fileExists(atPath: layout.parkedData(shop.id).path))
@@ -214,12 +226,107 @@ final class ProfileManagerTests: XCTestCase {
         XCTAssertFalse(fm.fileExists(atPath: profileHome.appendingPathComponent("Desktop").path),
                        "folders the real home doesn't have are not linked")
         XCTAssertEqual(zalo.launches, ["isolated:shop"])
-        XCTAssertTrue(manager.status(of: shop.id)?.isOpenSideBySide ?? false)
+        XCTAssertEqual(manager.status(of: shop.id)?.isOpen, true)
 
         // Opening it again only brings it forward.
-        try manager.openSideBySide(shop.id)
+        try manager.open(shop.id)
         XCTAssertEqual(zalo.launches.count, 2)
         XCTAssertTrue(zalo.launches[1].hasPrefix("activate:"))
+    }
+
+    func test_accountsOpenAtTheSameTimeWithoutClosingTheMainZalo() throws {
+        try makeLiveData(account: "111111")
+        try manager.saveCurrent(as: "Personal")
+        let work = try makeParkedProfile("Work", account: "222222")
+        let shop = try manager.addProfile(named: "Shop")
+
+        try manager.open(work.id)
+        try manager.open(shop.id)
+
+        XCTAssertEqual(zalo.launches, ["isolated:work", "isolated:shop"], "the main Zalo is never quit")
+        XCTAssertEqual(manager.statuses().filter(\.isOpen).map(\.profile.id), ["personal", "shop", "work"])
+        XCTAssertEqual(liveSession(), "session of 111111")
+        XCTAssertEqual(manager.status(of: "work")?.place, .parked, "nothing moves to open an account")
+    }
+
+    func test_theFirstNewAccountGoesIntoTheEmptyMainSlot() throws {
+        let personal = try manager.addProfile(named: "Personal")
+        try manager.open(personal.id)
+        XCTAssertEqual(manager.mainSlot(), .profile("personal"))
+        XCTAssertEqual(zalo.launches, ["main"])
+
+        // Once the main slot has an account, new ones open in windows of their own.
+        let work = try manager.addProfile(named: "Work")
+        try manager.open(work.id)
+        XCTAssertEqual(zalo.launches, ["main", "isolated:work"])
+        XCTAssertEqual(manager.mainSlot(), .profile("personal"))
+    }
+
+    func test_openAllOpensLoggedInAccountsWithTheMainZaloLast() throws {
+        try makeLiveData(account: "111111", running: false)
+        try manager.saveCurrent(as: "Personal")
+        try makeParkedProfile("Work", account: "222222")
+        try makeParkedProfile("Work copy", account: "222222")
+        try manager.addProfile(named: "Shop")
+
+        let opened = try manager.openAll()
+
+        XCTAssertEqual(opened, ["Work", "Personal"], "skips the second copy of an account and the one never logged in")
+        XCTAssertEqual(zalo.launches, ["isolated:work", "main"])
+        XCTAssertEqual(try manager.openAll(), [], "nothing more to open")
+    }
+
+    func test_aZaloAccountOpensInOneWindowOnly() throws {
+        try makeLiveData(account: "111111")
+        try manager.saveCurrent(as: "Personal")
+        let work = try makeParkedProfile("Work", account: "222222")
+        let copy = try makeParkedProfile("Work copy", account: "222222")
+        try manager.open(work.id)
+
+        XCTAssertThrowsError(try manager.open(copy.id)) {
+            XCTAssertEqual($0 as? ProfileError, .sameAccountOpen("Work copy", other: "Work"))
+        }
+        XCTAssertEqual(zalo.launches, ["isolated:work"])
+    }
+
+    func test_makeMainSwapsTheFoldersAndKeepsBothAccountsOpen() throws {
+        try makeLiveData(account: "111111")
+        try manager.saveCurrent(as: "Personal")
+        let work = try makeParkedProfile("Work", account: "222222")
+        let shop = try makeParkedProfile("Shop", account: "333333")
+        try manager.open(work.id)
+        try manager.open(shop.id)
+        zalo.launches = []
+
+        try manager.makeMain(work.id)
+
+        XCTAssertEqual(manager.mainSlot(), .profile("work"))
+        XCTAssertEqual(liveSession(), "session of 222222")
+        XCTAssertEqual(manager.status(of: "personal")?.place, .parked)
+        XCTAssertEqual(zalo.launches, ["quit:ZaloData", "quit:ZaloData", "main", "isolated:personal"])
+        XCTAssertEqual(manager.statuses().filter(\.isOpen).map(\.profile.id), ["personal", "shop", "work"],
+                       "both swapped accounts open again, and the other window never closed")
+    }
+
+    func test_makeMainRefusesWhileTheMainZaloHoldsAnUnsavedAccount() throws {
+        try makeLiveData(account: "111111")
+        let work = try makeParkedProfile("Work", account: "222222")
+        XCTAssertThrowsError(try manager.makeMain(work.id)) {
+            XCTAssertEqual($0 as? ProfileError, .currentDataNotSaved)
+        }
+        XCTAssertEqual(liveSession(), "session of 111111")
+        XCTAssertTrue(zalo.launches.isEmpty)
+    }
+
+    func test_closeAllQuitsEveryWindow() throws {
+        try makeLiveData(account: "111111")
+        try manager.saveCurrent(as: "Personal")
+        try manager.open(try makeParkedProfile("Work", account: "222222").id)
+
+        try manager.closeAll()
+
+        XCTAssertTrue(manager.statuses().allSatisfy { !$0.isOpen })
+        XCTAssertNil(manager.mainZaloPID())
     }
 
     func test_removeMovesParkedProfilesToTheTrashOnly() throws {

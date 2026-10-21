@@ -8,7 +8,18 @@ cd "$(dirname "$0")"
 HERE="$PWD"
 
 ../../macos/scripts/build.sh
-"../../macos/build/Zalo Switcher.app/Contents/MacOS/ZaloSwitcher" --render-screenshots "$HERE"
+# One launch per image: only an app's first window is likely to draw as active. macOS can still
+# refuse to bring the app forward while you use another app, so try each image a few times.
+for shot in cua-so-chinh cua-so-chinh-toi sao-luu cai-dat; do
+    for attempt in 1 2 3 4 5; do
+        if "../../macos/build/Zalo Switcher.app/Contents/MacOS/ZaloSwitcher" --render-screenshots "$HERE" --only "$shot" \
+            2>&1 | tee /dev/stderr | grep -q "may look inactive"; then
+            echo "Retrying $shot ($attempt)"
+        else
+            break
+        fi
+    done
+done
 
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 render() {   # render <page> <width> <height>
@@ -21,4 +32,4 @@ render() {   # render <page> <width> <height>
     echo "Wrote $HERE/$1.png"
 }
 render song-song 1600 1040
-render cach-hoat-dong 1400 900
+render cach-hoat-dong 1400 820

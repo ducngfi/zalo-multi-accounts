@@ -37,15 +37,19 @@ public struct ProfileStatus: Equatable, Sendable {
     /// Where its data is now, if it has any.
     public var dataFolder: URL?
 
-    public var isOpenSideBySide: Bool { place != .main && runningPID != nil }
+    /// Whether a Zalo window has this profile open.
+    public var isOpen: Bool { runningPID != nil }
 }
 
 struct State: Codable {
     var main: String?
 }
 
-/// Saves, switches and opens Zalo profiles. Every change is a folder rename on the same disk:
-/// nothing is copied, and nothing is deleted except by moving a whole profile to the Trash.
+/// Saves and opens Zalo profiles, each in a Zalo window of its own, all at the same time. The
+/// profile in the main slot opens in the normal Zalo; every other one opens in a separate Zalo
+/// whose home folder is the profile folder. Moving a profile into the main slot is a folder rename
+/// on the same disk: nothing is copied, and nothing is deleted except by moving a whole profile
+/// to the Trash.
 public final class ProfileManager {
     public let layout: Layout
     public var quitTimeout: TimeInterval = 60
@@ -181,12 +185,111 @@ public final class ProfileManager {
     public func remove(_ id: String) throws -> URL? {
         guard let status = status(of: id) else { throw ProfileError.notFound(id) }
         if status.place == .main { throw ProfileError.isInMainZalo(status.profile.name) }
-        if status.runningPID != nil { throw ProfileError.openSideBySide(status.profile.name) }
+        if status.isOpen { throw ProfileError.isOpen(status.profile.name) }
         return try moveToTrash(layout.profileHome(id))
     }
 
-    /// Makes `id` the profile of the normal Zalo app: quits Zalo, moves the current profile's data
-    /// into its profile folder, moves `id`'s data into `ZaloData`, and starts Zalo again.
+    /// Opens a profile in a Zalo window of its own, next to any that are already open, or brings
+    /// its window forward. A new profile opens at the login screen; while the main slot is empty,
+    /// it goes there, so the normal Zalo app has an account.
+    public func open(_ id: String) throws {
+        guard let status = status(of: id) else { throw ProfileError.notFound(id) }
+        try requireZaloInstalled()
+        if let pid = status.runningPID {
+            zalo.activate(pid: pid)
+            return
+        }
+        try refuseIfSameAccountIsOpen(status)
+        switch status.place {
+        case .main:
+            try zalo.launchMain(app: layout.zaloApp)
+        case .new where mainSlot() == .empty:
+            try switchTo(id)
+        case .parked, .new:
+            try prepareHome(id)
+            try zalo.launchIsolated(app: layout.zaloApp, home: layout.profileHome(id))
+        }
+        touch(status.profile)
+    }
+
+    /// Opens every profile that has been logged in and isn't open yet. Skips a profile holding the
+    /// same Zalo account as one that is open. The normal Zalo opens last. Returns the names opened.
+    @discardableResult
+    public func openAll(progress: (String) -> Void = { _ in }) throws -> [String] {
+        let all = statuses()
+        var openAccounts = Set(all.filter(\.isOpen).compactMap(\.zaloUserID))
+        if mainSlot() == .unsaved, mainZaloPID() != nil, let uid = mainZaloUserID() { openAccounts.insert(uid) }
+        let closed = all.filter { !$0.isOpen && $0.place != .new }
+        var opened: [String] = []
+        var firstError: Error?
+        for status in closed.filter({ $0.place != .main }) + closed.filter({ $0.place == .main }) {
+            if let uid = status.zaloUserID, !openAccounts.insert(uid).inserted { continue }
+            progress("Đang mở \(status.profile.name)…")
+            do {
+                try open(status.profile.id)
+                opened.append(status.profile.name)
+            } catch {
+                firstError = firstError ?? error
+            }
+        }
+        if let firstError { throw firstError }
+        return opened
+    }
+
+    /// Quits the Zalo window that has this profile open, like ⌘Q in that window.
+    public func close(_ id: String) throws {
+        guard let status = status(of: id) else { throw ProfileError.notFound(id) }
+        guard let data = status.dataFolder, status.isOpen else { return }
+        try zalo.quit(dataFolder: data, timeout: quitTimeout)
+    }
+
+    /// Quits every Zalo window, including a normal Zalo holding an account that isn't saved.
+    public func closeAll(progress: (String) -> Void = { _ in }) throws {
+        for status in statuses() where status.isOpen {
+            progress("Đang đóng \(status.profile.name)…")
+            try close(status.profile.id)
+        }
+        if mainZaloPID() != nil {
+            progress("Đang đóng Zalo…")
+            try zalo.quit(dataFolder: layout.liveData, timeout: quitTimeout)
+        }
+    }
+
+    /// Makes `id` the profile the normal Zalo app opens, from the Dock, Launchpad or at login. The
+    /// windows of `id` and of the current main profile close for a few seconds while their folders
+    /// swap places, then open again; every other window keeps running.
+    public func makeMain(_ id: String, progress: (String) -> Void = { _ in }) throws {
+        guard let target = status(of: id) else { throw ProfileError.notFound(id) }
+        if target.place == .main { return }
+        try requireZaloInstalled()
+        let slot = mainSlot()
+        if slot == .unsaved { throw ProfileError.currentDataNotSaved }
+        var previous: String?
+        if case .profile(let current) = slot { previous = current }
+        let previousWasOpen = previous != nil && mainZaloPID() != nil
+
+        do {
+            if target.isOpen, let data = target.dataFolder {
+                progress("Đang đóng \(target.profile.name)…")
+                try zalo.quit(dataFolder: data, timeout: quitTimeout)
+                if zalo.pidUsing(dataFolder: data) != nil { throw ProfileError.zaloDidNotQuit }
+            }
+            try switchTo(id, progress: progress)
+        } catch {
+            // Open again whatever was open, wherever its data is now.
+            if target.isOpen { try? open(id) }
+            if previousWasOpen, let previous { try? open(previous) }
+            throw error
+        }
+        if previousWasOpen, let previous {
+            progress("Đang mở lại \(loadProfile(previous)?.name ?? previous)…")
+            try open(previous)
+        }
+    }
+
+    /// Moves `id` into the main slot: quits the normal Zalo, moves the current profile's data into
+    /// its profile folder, moves `id`'s data into `ZaloData`, and starts Zalo again. Refuses while
+    /// `id` is open in a window of its own; `makeMain` closes and reopens windows around this.
     public func switchTo(_ id: String, launch: Bool = true, progress: (String) -> Void = { _ in }) throws {
         guard let target = loadProfile(id) else { throw ProfileError.notFound(id) }
         if launch { try requireZaloInstalled() }
@@ -199,7 +302,7 @@ public final class ProfileManager {
             return
         }
         if slot == .unsaved { throw ProfileError.currentDataNotSaved }
-        if zalo.pidUsing(dataFolder: layout.parkedData(id)) != nil { throw ProfileError.openSideBySide(target.name) }
+        if zalo.pidUsing(dataFolder: layout.parkedData(id)) != nil { throw ProfileError.isOpen(target.name) }
 
         if mainZaloPID() != nil {
             progress("Đang thoát Zalo…")
@@ -244,40 +347,21 @@ public final class ProfileManager {
         }
     }
 
-    /// Opens a profile in a separate Zalo window, next to the normal one. Experimental: Zalo's call
-    /// helper uses fixed socket paths, so calls only work reliably in one window at a time.
-    public func openSideBySide(_ id: String) throws {
-        guard let status = status(of: id) else { throw ProfileError.notFound(id) }
-        try requireZaloInstalled()
-        if let pid = status.runningPID {
-            zalo.activate(pid: pid)
-            return
-        }
-        if status.place == .main {
-            try zalo.launchMain(app: layout.zaloApp)
-            return
-        }
-        try prepareHome(id)
-        try zalo.launchIsolated(app: layout.zaloApp, home: layout.profileHome(id))
-        touch(status.profile)
-    }
-
-    /// Quits the Zalo window that has this profile open, like ⌘Q in that window.
-    public func close(_ id: String) throws {
-        guard let status = status(of: id) else { throw ProfileError.notFound(id) }
-        guard let data = status.dataFolder, status.runningPID != nil else { return }
-        try zalo.quit(dataFolder: data, timeout: quitTimeout)
-    }
-
-    /// Starts the normal Zalo app, or brings it forward.
-    public func openMain() throws {
-        try requireZaloInstalled()
-        if let pid = mainZaloPID() { zalo.activate(pid: pid) } else { try zalo.launchMain(app: layout.zaloApp) }
-    }
-
     // MARK: - Helpers
 
-    /// Gets a profile folder ready to be used as a home folder by a side-by-side Zalo.
+    /// Two windows on one Zalo account would share one login session, which Zalo may end or
+    /// flag; this happens with a restored backup of an account that is still in the list.
+    func refuseIfSameAccountIsOpen(_ status: ProfileStatus) throws {
+        guard let uid = status.zaloUserID else { return }
+        if let other = statuses().first(where: { $0.profile.id != status.profile.id && $0.isOpen && $0.zaloUserID == uid }) {
+            throw ProfileError.sameAccountOpen(status.profile.name, other: other.profile.name)
+        }
+        if mainSlot() == .unsaved, mainZaloPID() != nil, mainZaloUserID() == uid {
+            throw ProfileError.sameAccountOpen(status.profile.name, other: "Zalo chính")
+        }
+    }
+
+    /// Gets a profile folder ready to be used as the home folder of a Zalo of its own.
     func prepareHome(_ id: String) throws {
         let data = layout.parkedData(id)
         if !exists(data) {

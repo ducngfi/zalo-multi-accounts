@@ -8,7 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     enum Mode {
         case normal
         case demo
-        case screenshots(URL)
+        case screenshots(URL, only: String?)
     }
 
     private let mode: Mode
@@ -43,11 +43,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model = AppModel(manager: manager, isDemo: isDemo)
         model.setLowSpaceThreshold(gigabytes: settings.lowSpaceGB)
 
-        if case .screenshots(let folder) = mode {
+        if case .screenshots(let folder, let only) = mode {
             NSApp.setActivationPolicy(.accessory)
             Task {
                 do {
-                    try await Screenshots.render(model: model, settings: settings, into: folder)
+                    try await Screenshots.render(model: model, settings: settings, into: folder, only: only)
                 } catch {
                     FileHandle.standardError.write(Data("\(error)\n".utf8))
                 }
@@ -71,7 +71,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak self] gigabytes in self?.model.setLowSpaceThreshold(gigabytes: gigabytes) }
             .store(in: &observations)
 
-        if !launchedAtLogin() { showMainWindow(nil) }
+        if !launchedAtLogin() {
+            showMainWindow(nil)
+        } else if settings.openAllAtLogin {
+            // Give Zalo a moment, in case it opens at login by itself; open skips what is already open.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 8) { [weak self] in
+                self?.model.openAll(asking: false)
+            }
+        }
     }
 
     /// Clicking the Dock icon, or opening the app again from Finder, Launchpad or Spotlight.
@@ -102,7 +109,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func showAbout(_ sender: Any?) {
         let credits = NSAttributedString(
-            string: "Giữ nhiều tài khoản Zalo trên một máy Mac và chuyển qua lại mà không cần đăng xuất.\n\nDự án độc lập, không liên kết với Zalo hay VNG.",
+            string: "Dùng nhiều tài khoản Zalo cùng lúc trên một máy Mac, mỗi tài khoản một cửa sổ, không cần đăng xuất hay đăng nhập lại.\n\nDự án độc lập, không liên kết với Zalo hay VNG.",
             attributes: [.font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor.secondaryLabelColor])
         NSApp.activate(ignoringOtherApps: true)
         NSApp.orderFrontStandardAboutPanel(options: [.credits: credits])

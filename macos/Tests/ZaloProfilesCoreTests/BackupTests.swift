@@ -84,15 +84,15 @@ extension ProfileManagerTests {
         XCTAssertEqual(liveSession(), "session of 111111", "the original stays in place")
     }
 
-    func test_backupOfAProfileOpenSideBySideReopensItSideBySide() throws {
+    func test_backupOfAProfileOpenInItsOwnWindowReopensItThere() throws {
         try makeTwoProfiles()
-        try manager.openSideBySide("work")
+        try manager.open("work")
         zalo.launches.removeAll()
 
         try manager.backup("work", to: try makeDrive())
 
         XCTAssertEqual(zalo.launches, ["quit:ZaloData", "isolated:work"])
-        XCTAssertTrue(manager.status(of: "work")?.isOpenSideBySide ?? false)
+        XCTAssertEqual(manager.status(of: "work")?.isOpen, true)
     }
 
     func test_backupRefusalsLeaveNothingBehind() throws {
@@ -207,11 +207,11 @@ extension ProfileManagerTests {
 
     func test_closeQuitsOnlyThatProfilesWindow() throws {
         try makeTwoProfiles()
-        try manager.openSideBySide("work")
+        try manager.open("work")
 
         try manager.close("work")
 
-        XCTAssertFalse(manager.status(of: "work")?.isOpenSideBySide ?? true)
+        XCTAssertEqual(manager.status(of: "work")?.isOpen, false)
         XCTAssertNotNil(manager.mainZaloPID(), "the main Zalo keeps running")
         try manager.close("work")  // closing a closed profile does nothing
     }

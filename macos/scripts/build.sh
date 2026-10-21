@@ -4,8 +4,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION="1.1.0"   # shown in Finder; raise it, and BUILD, for every release
-BUILD="2"
+VERSION="1.2.0"   # shown in Finder; raise it, and BUILD, for every release
+BUILD="3"
 
 ARCHS=(--arch arm64 --arch x86_64)
 swift build -c release "${ARCHS[@]}" --product ZaloSwitcher

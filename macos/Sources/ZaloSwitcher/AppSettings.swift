@@ -9,6 +9,7 @@ final class AppSettings: ObservableObject {
         static let showMenuBarIcon = "showMenuBarIcon"
         static let showDockIcon = "showDockIcon"
         static let lowSpaceGB = "lowSpaceGB"
+        static let openAllAtLogin = "openAllAtLogin"
     }
 
     private let defaults: UserDefaults
@@ -26,14 +27,20 @@ final class AppSettings: ObservableObject {
     @Published var lowSpaceGB: Int {
         didSet { defaults.set(lowSpaceGB, forKey: Key.lowSpaceGB) }
     }
+    /// When the Mac starts the app at login, it also opens every account that has been logged in.
+    @Published var openAllAtLogin: Bool {
+        didSet { defaults.set(openAllAtLogin, forKey: Key.openAllAtLogin) }
+    }
 
     init(isDemo: Bool) {
         self.isDemo = isDemo
         defaults = isDemo ? UserDefaults(suiteName: "local.zalo-switcher.demo") ?? .standard : .standard
-        defaults.register(defaults: [Key.showMenuBarIcon: true, Key.showDockIcon: true, Key.lowSpaceGB: 5])
+        defaults.register(defaults: [Key.showMenuBarIcon: true, Key.showDockIcon: true, Key.lowSpaceGB: 5,
+                                     Key.openAllAtLogin: true])
         showMenuBarIcon = defaults.bool(forKey: Key.showMenuBarIcon)
         showDockIcon = defaults.bool(forKey: Key.showDockIcon)
         lowSpaceGB = defaults.integer(forKey: Key.lowSpaceGB)
+        openAllAtLogin = defaults.bool(forKey: Key.openAllAtLogin)
     }
 
     var openAtLogin: Bool {

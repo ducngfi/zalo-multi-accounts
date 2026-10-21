@@ -2,9 +2,10 @@
 
 # Zalo Switcher
 
-Giữ nhiều tài khoản Zalo trên một máy Mac và chuyển qua lại chỉ với một cú bấm. Bạn không phải đăng xuất, nhập lại mật khẩu hay quét lại mã QR, và không mất tin nhắn, ảnh hay tệp nào.
+Dùng nhiều tài khoản Zalo cùng lúc trên một máy Mac. Mỗi tài khoản mở trong một cửa sổ Zalo riêng, đã đăng nhập sẵn và nhận tin nhắn như bình thường. Bạn không phải đăng xuất, nhập lại mật khẩu hay quét lại mã QR, và không mất tin nhắn, ảnh hay tệp nào.
 
-<p align="center"><img src="docs/screenshots/cua-so-chinh.png" width="760" alt="Cửa sổ Zalo Switcher với bốn tài khoản"></p>
+<p align="center"><img src="docs/screenshots/song-song.png" width="860" alt="Hai tài khoản Zalo mở cùng lúc, mỗi tài khoản một cửa sổ, với cửa sổ Zalo Switcher ở giữa"></p>
+<p align="center"><sub>Minh họa với dữ liệu giả lập.</sub></p>
 
 **Chỉ dành cho macOS** (macOS 13 trở lên). Hiện chưa có bản Windows; dự án được sắp xếp để có thể thêm bản Windows sau này (xem [Cấu trúc dự án](#cấu-trúc-dự-án)).
 
@@ -17,19 +18,19 @@ Có hai cách dùng, chung một mã nguồn:
 > **Không liên kết với Zalo.** Zalo Switcher là dự án độc lập, không chính thức. Dự án không do Zalo hay VNG làm ra, bảo trợ hay hỗ trợ, và tác giả không có liên quan gì tới thương hiệu Zalo. “Zalo” là nhãn hiệu của chủ sở hữu, chỉ được nhắc tới ở đây để nói công cụ này dùng với ứng dụng nào. Nếu cần hỗ trợ về Zalo, hãy liên hệ Zalo, không phải dự án này.
 
 > [!WARNING]
-> **Bạn tự chịu rủi ro khi sử dụng.** Zalo Switcher di chuyển thư mục chứa toàn bộ tin nhắn, ảnh và tệp Zalo của bạn. Ứng dụng được viết cẩn thận (chỉ đổi tên thư mục, không bao giờ xóa dữ liệu Zalo, và dừng lại ngay khi có gì bất thường), nhưng không có bất kỳ bảo hành nào. **Tác giả không chịu trách nhiệm nếu bạn mất dữ liệu, mất quyền truy cập tài khoản hay gặp bất kỳ vấn đề nào khác khi sử dụng.** Hãy sao lưu dữ liệu Zalo trước khi bắt đầu, và giữ bản sao lưu của những gì bạn không thể để mất. Xem [LICENSE](LICENSE).
+> **Bạn tự chịu rủi ro khi sử dụng.** Zalo Switcher mở Zalo trên các thư mục chứa toàn bộ tin nhắn, ảnh và tệp Zalo của bạn, và đổi tên các thư mục đó khi bạn đổi Zalo chính. Ứng dụng được viết cẩn thận (chỉ đổi tên thư mục, không bao giờ xóa dữ liệu Zalo, và dừng lại ngay khi có gì bất thường), nhưng không có bất kỳ bảo hành nào. **Tác giả không chịu trách nhiệm nếu bạn mất dữ liệu, mất quyền truy cập tài khoản hay gặp bất kỳ vấn đề nào khác khi sử dụng.** Hãy sao lưu dữ liệu Zalo trước khi bắt đầu, và giữ bản sao lưu của những gì bạn không thể để mất. Xem [LICENSE](LICENSE).
 
 ## Mục lục
 
 - [Giới hạn, và vì sao có các giới hạn đó](#giới-hạn-và-vì-sao-có-các-giới-hạn-đó)
-- [Cách chuyển tài khoản hoạt động](#cách-chuyển-tài-khoản-hoạt-động)
+- [Cách hoạt động](#cách-hoạt-động)
 - [Cài đặt](#cài-đặt)
 - [Sử dụng](#sử-dụng)
 - [Bản demo](#bản-demo)
 - [Dùng bằng dòng lệnh](#dùng-bằng-dòng-lệnh)
 - [Dung lượng ổ đĩa](#dung-lượng-ổ-đĩa)
 - [Sao lưu và khôi phục](#sao-lưu-và-khôi-phục)
-- [Mở song song (thử nghiệm)](#mở-song-song-thử-nghiệm)
+- [Nhiều cửa sổ Zalo cùng lúc](#nhiều-cửa-sổ-zalo-cùng-lúc)
 - [Lưu ý thêm](#lưu-ý-thêm)
 - [Cấu trúc dự án](#cấu-trúc-dự-án)
 
@@ -47,52 +48,55 @@ Cách làm được là dùng cùng lúc các loại phiên khác nhau, ví dụ
 
 Cả ba vẫn đăng nhập cùng lúc. Hãy thử một lần trên tài khoản của bạn: đăng nhập trình duyệt trên máy B trong khi ứng dụng trên máy A đang mở, và kiểm tra máy A vẫn còn đăng nhập.
 
-Zalo Switcher làm một việc khác: giữ **nhiều tài khoản khác nhau** trên **một** máy Mac và cho bạn đổi tài khoản mà ứng dụng Zalo đang mở.
+Zalo Switcher làm một việc khác: giữ **nhiều tài khoản khác nhau** trên **một** máy Mac và mở chúng cùng lúc, mỗi tài khoản một cửa sổ Zalo.
 
 **Ứng dụng không sao chép phiên đăng nhập sang máy tính khác.** Sao chép thư mục dữ liệu Zalo đã đăng nhập sang máy Mac thứ hai để cả hai chạy “cùng một” phiên không vượt qua được quy tắc trên. Máy chủ Zalo sẽ thấy một phiên kết nối từ hai nơi. Nhẹ thì một bản bị đăng xuất; nặng thì tài khoản bị đánh dấu có hoạt động bất thường. Rủi ro đó không đáng với tài khoản chính của bạn, nên dự án này không làm việc đó.
 
-**Chỉ tài khoản đang mở trong Zalo mới nhận thông báo.** Các tài khoản khác vẫn đăng nhập trên máy chủ Zalo, nhưng trên máy Mac không có gì đang nghe tin nhắn cho chúng. Tin nhắn của chúng sẽ về khi bạn chuyển lại, giống như khi máy Mac tắt trong khoảng thời gian đó.
+**Chỉ tài khoản đang mở mới nhận tin nhắn và thông báo.** Tài khoản đã đóng vẫn đăng nhập trên máy chủ Zalo, nhưng trên máy Mac không có gì đang nghe tin nhắn cho nó. Tin nhắn sẽ về khi bạn mở lại, giống như khi máy Mac tắt trong khoảng thời gian đó. Muốn mọi tài khoản luôn nhận tin, hãy để chúng cùng mở, hoặc cho Zalo Switcher tự mở mọi tài khoản khi bạn đăng nhập máy Mac (xem [Cài đặt](#cài-đặt-1)).
 
-**Chuyển tài khoản sẽ khởi động lại Zalo.** Việc này mất vài giây. Nếu Zalo không chịu thoát (đang có cuộc gọi, hoặc đang mở một hộp thoại), việc chuyển sẽ dừng lại và chưa có gì bị di chuyển.
+**Gọi thoại và gọi video chỉ ổn định ở một cửa sổ.** Phần gọi điện của Zalo dùng các tệp socket cố định, nên khi nhiều Zalo cùng chạy, chỉ một cửa sổ gọi được ổn định. Xem [Nhiều cửa sổ Zalo cùng lúc](#nhiều-cửa-sổ-zalo-cùng-lúc).
+
+**Mỗi cửa sổ là một ứng dụng Zalo đầy đủ.** Mỗi tài khoản đang mở dùng thêm bộ nhớ như khi chạy thêm một Zalo, và có biểu tượng Zalo riêng trong Dock.
 
 **Mỗi tài khoản chiếm dung lượng riêng.** Mỗi tài khoản giữ trọn bộ dữ liệu Zalo của riêng nó, thường vài GB trở lên, vì Zalo lưu dữ liệu như vậy.
 
 **Ứng dụng phụ thuộc vào nơi Zalo lưu dữ liệu.** Zalo không có cách chính thức để chạy nhiều tài khoản, nên công cụ này làm việc với thư mục mà Zalo đang dùng hiện nay. Nếu một bản cập nhật của Zalo đổi thư mục đó, công cụ sẽ không tìm thấy nó và không di chuyển gì, cho tới khi được cập nhật.
 
-**Mở hai cửa sổ cùng lúc vẫn đang thử nghiệm.** Xem [Mở song song](#mở-song-song-thử-nghiệm): gọi thoại và gọi video chỉ ổn định ở một cửa sổ.
-
 **Bản tải về chưa được Apple công chứng (notarize).** macOS sẽ hiện cảnh báo bảo mật ở lần mở đầu tiên. Mục [Cảnh báo bảo mật ở lần mở đầu tiên](#cảnh-báo-bảo-mật-ở-lần-mở-đầu-tiên) giải thích lý do và cách mở.
 
-## Cách chuyển tài khoản hoạt động
+## Cách hoạt động
 
-<p align="center"><img src="docs/screenshots/cach-hoat-dong.png" width="760" alt="Sơ đồ: thoát Zalo, đổi chỗ thư mục, mở lại Zalo"></p>
+<p align="center"><img src="docs/screenshots/cach-hoat-dong.png" width="760" alt="Sơ đồ: mỗi tài khoản một thư mục dữ liệu và một cửa sổ Zalo riêng"></p>
 
 Zalo lưu mọi thứ (phiên đăng nhập, cơ sở dữ liệu tin nhắn, ảnh, tệp, cài đặt) trong một thư mục:
 
 ```
-~/Library/Application Support/ZaloData        ← thư mục ứng dụng Zalo dùng
+~/Library/Application Support/ZaloData        ← thư mục Zalo dùng khi được mở theo cách bình thường
 ```
 
-Zalo bỏ qua tùy chọn `--user-data-dir` quen thuộc và luôn dùng đường dẫn đó, nên Zalo Switcher giữ cho mỗi tài khoản một bản đầy đủ của thư mục này và đưa đúng bản vào chỗ:
+Zalo bỏ qua tùy chọn `--user-data-dir` quen thuộc và luôn dùng đường dẫn đó, nên Zalo Switcher giữ cho mỗi tài khoản một bản đầy đủ của thư mục này:
 
 ```
+~/Library/Application Support/ZaloData                  ← tài khoản Zalo chính, ví dụ “Cá nhân”
 ~/Library/Application Support/Zalo Profiles/
     ca-nhan/profile.json
-    ca-nhan/Library/Application Support/ZaloData     ← được cất ở đây khi tài khoản khác đang mở trong Zalo
-    cong-ty/profile.json
-    cong-ty/Library/Application Support/ZaloData
+    cua-hang/profile.json
+    cua-hang/Library/Application Support/ZaloData     ← dữ liệu của “Cửa hàng”
 ```
 
-Khi chuyển sang tài khoản khác, ứng dụng:
+Mỗi thư mục tài khoản có dạng như một thư mục nhà (home). Khi bạn mở một tài khoản, Zalo Switcher mở thêm một Zalo với biến môi trường `CFFIXED_USER_HOME` trỏ tới thư mục đó. macOS khi đó cho Zalo ấy một thư mục Application Support riêng, nên nó đọc và ghi `ZaloData` của đúng tài khoản đó, cùng lúc với các Zalo khác, và không bao giờ chạm vào dữ liệu của chúng. Mở một tài khoản không sao chép hay di chuyển gì.
 
-1. Yêu cầu Zalo thoát (như khi bấm ⌘Q) và đợi đến khi Zalo cùng các tiến trình phụ đã đóng hẳn. Ứng dụng không bao giờ buộc Zalo thoát. Nếu Zalo không thoát, mọi thứ dừng lại và chưa có gì bị di chuyển.
-2. Đổi tên `ZaloData` thành thư mục của tài khoản hiện tại.
-3. Đổi tên thư mục của tài khoản cần chuyển sang thành `ZaloData`.
-4. Mở Zalo, và Zalo mở ra với tài khoản đó, đã đăng nhập sẵn.
+**Zalo chính** là tài khoản nằm ở `~/Library/Application Support/ZaloData`: tài khoản mở ra khi bạn bấm biểu tượng Zalo trong Dock hay Launchpad, hoặc khi Zalo tự mở cùng máy Mac. Muốn tài khoản khác làm Zalo chính, chọn **⋯ → Đặt làm Zalo chính…** Ứng dụng khi đó:
+
+1. Yêu cầu cửa sổ Zalo của hai tài khoản đó thoát (như khi bấm ⌘Q) và đợi đến khi chúng cùng các tiến trình phụ đóng hẳn. Ứng dụng không bao giờ buộc một Zalo đang có tài khoản đăng nhập phải thoát. Nếu Zalo không thoát, mọi thứ dừng lại và chưa có gì bị di chuyển.
+2. Đổi tên `ZaloData` thành thư mục của tài khoản Zalo chính cũ.
+3. Đổi tên thư mục của tài khoản mới thành `ZaloData`.
+4. Mở lại cả hai, đã đăng nhập sẵn: tài khoản mới trong Zalo chính, tài khoản cũ trong cửa sổ riêng. Các cửa sổ khác vẫn chạy suốt quá trình.
 
 Mỗi bước chỉ là đổi tên thư mục trên cùng một ổ đĩa: mất chưa tới một giây dù thư mục lớn bao nhiêu, không tốn thêm dung lượng, và không bao giờ sao chép hay xóa gì. Ứng dụng còn từ chối:
 
-- chuyển khi tài khoản đang mở trong Zalo chưa được lưu, để dữ liệu của nó không bị mất;
+- đổi Zalo chính khi tài khoản đang ở Zalo chính chưa được lưu, để dữ liệu của nó không bị mất;
+- mở cùng một tài khoản Zalo ở hai cửa sổ (ví dụ một tài khoản và bản khôi phục của nó), vì hai cửa sổ sẽ dùng chung một phiên đăng nhập;
 - thay thế bất cứ thứ gì ở nơi đến (nếu bất ngờ có một thư mục chắn đường, ứng dụng dừng lại);
 - di chuyển dữ liệu sang ổ đĩa khác (vì như vậy là sao chép).
 
@@ -172,19 +176,29 @@ Cửa sổ tự mở khi bạn mở ứng dụng. Sau đó, bạn mở lại c�
 
 - bấm biểu tượng **Zalo Switcher trong Dock**;
 - mở Zalo Switcher từ **Launchpad**, **Spotlight** (⌘ Space, gõ “Zalo Switcher”) hoặc thư mục **Ứng dụng**;
-- bấm biểu tượng hai người trên **thanh menu** ở đầu màn hình, rồi chọn **Mở cửa sổ Zalo Switcher…**
+- bấm biểu tượng hai người trên **thanh menu** ở đầu màn hình (bên cạnh là số cửa sổ Zalo đang mở), rồi chọn **Mở cửa sổ Zalo Switcher…**
 
 Trên MacBook có tai thỏ (notch), biểu tượng trên thanh menu có thể bị che khi thanh menu có nhiều biểu tượng. Vì vậy biểu tượng trong Dock được bật sẵn, và bạn luôn mở được cửa sổ bằng Dock, Launchpad hoặc Spotlight. Đóng cửa sổ không thoát ứng dụng; muốn thoát, chọn **Zalo Switcher → Thoát Zalo Switcher** (⌘Q).
 
-### Lưu tài khoản đầu tiên và thêm tài khoản
+### Thêm tài khoản và mở chúng cùng lúc
 
-1. Lần đầu mở, cửa sổ báo tài khoản đang mở trong Zalo chưa được lưu. Bấm **Lưu tài khoản này…** và đặt tên, ví dụ “Cá nhân”. Zalo vẫn chạy bình thường.
-2. Bấm **Thêm tài khoản** và đặt tên cho tài khoản tiếp theo, ví dụ “Cửa hàng”. Zalo khởi động lại ở màn hình đăng nhập; hãy đăng nhập tài khoản đó một lần (mã QR hoặc mật khẩu).
-3. Từ đó trở đi, bấm **Chuyển sang** ở tài khoản nào thì Zalo mở tài khoản đó. Tài khoản đang mở trong Zalo có nhãn **Đang dùng**.
+<p align="center"><img src="docs/screenshots/cua-so-chinh.png" width="760" alt="Cửa sổ Zalo Switcher với bốn tài khoản, hai tài khoản đang mở"></p>
 
-Mỗi tài khoản hiện dung lượng, ID Zalo (bốn số cuối) và lần dùng gần nhất. Nút **⋯** của mỗi tài khoản có **Sao lưu…**, **Đổi tên…** và **Chuyển vào Thùng rác…**
+1. Lần đầu mở, cửa sổ báo Zalo chính đang giữ một tài khoản chưa được lưu. Bấm **Lưu tài khoản này…** và đặt tên, ví dụ “Cá nhân”. Zalo vẫn chạy bình thường. Nếu máy Mac chưa có Zalo nào đăng nhập, bỏ qua bước này: tài khoản đầu tiên bạn thêm sẽ thành Zalo chính.
+2. Bấm **Thêm tài khoản** và đặt tên cho tài khoản tiếp theo, ví dụ “Cửa hàng”. Một cửa sổ Zalo mới mở ở màn hình đăng nhập, còn các tài khoản đang mở vẫn chạy. Đăng nhập tài khoản đó một lần (mã QR hoặc mật khẩu).
+3. Từ đó trở đi, mỗi tài khoản có:
+   - **Mở**: mở tài khoản trong một cửa sổ Zalo riêng, đã đăng nhập sẵn;
+   - **Hiện**: đưa cửa sổ của tài khoản đang mở lên trước;
+   - **Đóng**: thoát riêng cửa sổ đó (như ⌘Q trong cửa sổ đó). Tài khoản vẫn đăng nhập, và tin nhắn sẽ về khi bạn mở lại.
 
-Biểu tượng trên thanh menu và menu của biểu tượng trong Dock (bấm chuột phải) cũng liệt kê các tài khoản để chuyển nhanh bằng một cú bấm.
+   Tài khoản đang mở có nhãn **Đang mở** và chấm xanh. Tài khoản Zalo chính có thêm nhãn **Zalo chính**.
+4. **Mở tất cả** mở mọi tài khoản đã đăng nhập, mỗi tài khoản một cửa sổ. Mũi tên bên cạnh có **Đóng mọi cửa sổ Zalo…**, và mũi tên bên cạnh **Thêm tài khoản** có **Khôi phục từ bản sao lưu…**
+
+Mỗi tài khoản hiện dung lượng, ID Zalo (bốn số cuối) và lần mở gần nhất. Nút **⋯** của mỗi tài khoản có **Sao lưu…**, **Đổi tên…**, **Đặt làm Zalo chính…** và **Chuyển vào Thùng rác…** (chỉ khi tài khoản đã đóng và không phải Zalo chính).
+
+Biểu tượng trên thanh menu và menu của biểu tượng trong Dock (bấm chuột phải) liệt kê các tài khoản, có dấu tích ở tài khoản đang mở: bấm một tài khoản để mở nó hoặc đưa nó lên trước. Hai menu này cũng có **Mở tất cả**, **Đóng** và **Thêm tài khoản…**
+
+**Nâng cấp từ bản 1.1 trở về trước:** các tài khoản đã lưu giữ nguyên. Nút **Chuyển sang** được thay bằng **Mở**, và việc đổi tài khoản nằm trong Zalo chính chuyển vào **⋯ → Đặt làm Zalo chính…**
 
 ### Cài đặt
 
@@ -193,9 +207,9 @@ Biểu tượng trên thanh menu và menu của biểu tượng trong Dock (bấ
 Bấm **Cài đặt** trong cửa sổ (hoặc ⌘,) để:
 
 - bật hoặc tắt biểu tượng trong Dock và biểu tượng trên thanh menu (nếu tắt cả hai, bạn vẫn mở được ứng dụng từ Launchpad, Spotlight hoặc thư mục Ứng dụng);
-- cho Zalo Switcher tự mở khi đăng nhập máy Mac (khi đó ứng dụng chạy nền, không hiện cửa sổ);
+- cho Zalo Switcher tự mở khi đăng nhập máy Mac (khi đó ứng dụng chạy nền, không hiện cửa sổ), và khi đó mở luôn mọi tài khoản đã đăng nhập, mỗi tài khoản một cửa sổ (bật sẵn);
 - chọn mức dung lượng trống mà dưới mức đó ứng dụng sẽ cảnh báo (mặc định 5 GB);
-- mở thư mục các tài khoản đã lưu hoặc thư mục dữ liệu Zalo trong Finder.
+- mở thư mục các tài khoản đã lưu hoặc thư mục dữ liệu của Zalo chính trong Finder.
 
 Ứng dụng có cả giao diện sáng và tối, theo cài đặt của máy Mac:
 
@@ -209,35 +223,36 @@ Muốn xem thử hoặc giới thiệu ứng dụng mà không để lộ dữ l
 open -n "/Applications/Zalo Switcher.app" --args --demo
 ```
 
-Bản demo dùng bốn tài khoản giả lập (“Cá nhân”, “Cửa hàng Hoa Mai”, “Công ty An Phát”, “Shop mới”) trong một thư mục tạm. Mọi nút đều hoạt động thật trên dữ liệu giả lập đó: chuyển tài khoản, mở song song, sao lưu, khôi phục, đổi tên, xóa. Bản demo không bao giờ mở Zalo thật và không chạm tới dữ liệu Zalo của bạn, và cài đặt của nó được lưu riêng. Các ảnh chụp màn hình trong README này được tạo từ bản demo (xem [Ảnh minh họa](#ảnh-minh-họa)).
+Bản demo dùng bốn tài khoản giả lập (“Cá nhân”, “Cửa hàng Hoa Mai”, “Công ty An Phát”, “Shop mới”) trong một thư mục tạm. Mọi nút đều hoạt động thật trên dữ liệu giả lập đó: mở, đóng, mở tất cả, đặt làm Zalo chính, sao lưu, khôi phục, đổi tên, xóa. Bản demo không bao giờ mở Zalo thật và không chạm tới dữ liệu Zalo của bạn, và cài đặt của nó được lưu riêng. Các ảnh chụp màn hình trong README này được tạo từ bản demo (xem [Ảnh minh họa](#ảnh-minh-họa)).
 
 ## Dùng bằng dòng lệnh
 
 ```bash
-zalo-profiles status                 # tài khoản đang mở trong Zalo, mọi tài khoản, dung lượng, dung lượng trống
-zalo-profiles save "Cá nhân"         # lưu tài khoản đang mở trong Zalo
-zalo-profiles add "Cửa hàng"         # thêm tài khoản, khởi động lại Zalo ở màn hình đăng nhập
-zalo-profiles switch ca-nhan         # chuyển (theo tên hoặc mã)
-zalo-profiles switch cua-hang --no-launch
+zalo-profiles status                 # mọi tài khoản, tài khoản nào đang mở, dung lượng, dung lượng trống
+zalo-profiles save "Cá nhân"         # lưu tài khoản đang có trong Zalo chính
+zalo-profiles add "Cửa hàng"         # thêm tài khoản và mở nó ở cửa sổ mới để đăng nhập
+zalo-profiles open cua-hang          # mở trong cửa sổ Zalo riêng (theo tên hoặc mã)
+zalo-profiles open --all             # mở mọi tài khoản đã đăng nhập
+zalo-profiles close cua-hang         # đóng cửa sổ của "cua-hang"
+zalo-profiles close --all            # đóng mọi cửa sổ Zalo
+zalo-profiles main cua-hang          # đặt làm Zalo chính
 zalo-profiles rename cua-hang "Shop"
 zalo-profiles remove cua-hang        # chuyển vào Thùng rác
-zalo-profiles open cua-hang          # mở song song (thử nghiệm)
-zalo-profiles close cua-hang         # đóng cửa sổ đang mở "cua-hang"
 zalo-profiles backup ca-nhan /Volumes/OCung
 zalo-profiles restore "/Volumes/OCung/Zalo Backups/ca-nhan 2026-10-20 21.00" "Cá nhân (khôi phục)"
 zalo-profiles paths
 ```
 
-Mã của tài khoản là tên viết không dấu, ví dụ “Cá nhân” → `ca-nhan`; bạn cũng có thể gõ tên đầy đủ trong dấu ngoặc kép.
+Mã của tài khoản là tên viết không dấu, ví dụ “Cá nhân” → `ca-nhan`; bạn cũng có thể gõ tên đầy đủ trong dấu ngoặc kép. Lệnh `switch` của bản 1.1 vẫn dùng được, nay là tên khác của `main`.
 
 ## Dung lượng ổ đĩa
 
 Dung lượng của từng tài khoản và dung lượng trống của máy Mac hiện trong cửa sổ, trong menu và trong `zalo-profiles status`. Khi dung lượng trống dưới 5 GB (hoặc mức bạn chọn trong Cài đặt):
 
 - cửa sổ hiện cảnh báo và biểu tượng trên thanh menu đổi thành hình tam giác cảnh báo;
-- thêm tài khoản hoặc mở song song sẽ hỏi trước. Trong dòng lệnh, `add` và `open` từ chối chạy trừ khi bạn thêm `--force`.
+- thêm tài khoản hoặc mở thêm tài khoản sẽ hỏi trước. Trong dòng lệnh, `add` và `open` từ chối chạy trừ khi bạn thêm `--force`.
 
-Zalo ghi tin nhắn và ảnh ngay khi chúng đến, nên ổ đĩa đầy là nguyên nhân chính khiến dữ liệu Zalo có thể bị hỏng. Bản thân việc chuyển tài khoản không cần dung lượng trống, vì chỉ đổi tên thư mục.
+Zalo ghi tin nhắn và ảnh ngay khi chúng đến, nên ổ đĩa đầy là nguyên nhân chính khiến dữ liệu Zalo có thể bị hỏng. Bản thân việc mở một tài khoản hay đổi Zalo chính không cần dung lượng trống, vì không sao chép gì.
 
 ## Sao lưu và khôi phục
 
@@ -248,7 +263,7 @@ Zalo ghi tin nhắn và ảnh ngay khi chúng đến, nên ổ đĩa đầy là 
 1. Nếu Zalo đang mở tài khoản đó, cửa sổ Zalo ấy tạm đóng vài giây, để cơ sở dữ liệu được ghi trọn vẹn chứ không dở dang.
 2. Ứng dụng chụp nhanh dữ liệu bằng APFS: một bản sao tức thì, dùng chung dung lượng với bản gốc nên gần như không tốn gì.
 3. Zalo tự mở lại. Mọi cửa sổ Zalo khác vẫn chạy suốt quá trình.
-4. Ứng dụng sao chép bản chụp sang ổ đĩa ở chế độ chạy ngầm và kiểm tra từng tệp có đúng kích thước với bản gốc. Trong lúc đó bạn vẫn dùng và chuyển tài khoản Zalo bình thường.
+4. Ứng dụng sao chép bản chụp sang ổ đĩa ở chế độ chạy ngầm và kiểm tra từng tệp có đúng kích thước với bản gốc. Trong lúc đó bạn vẫn dùng, mở và đóng các tài khoản bình thường.
 
    Zalo lưu nhiều ảnh và video dưới hai tên dùng chung một dữ liệu (liên kết cứng), thường lên tới vài GB. Bản sao lưu chép phần dữ liệu đó một lần và tạo lại tên thứ hai dưới dạng liên kết, nên bản sao lưu có dung lượng bằng đúng bản gốc. Bản chụp APFS làm mất các liên kết này, nên ứng dụng đọc chúng từ bản gốc trong lúc Zalo vẫn đang đóng. Trên ổ đĩa không hỗ trợ liên kết cứng (exFAT, FAT), mỗi tên được chép thành một bản riêng, nên bản sao lưu sẽ lớn hơn.
 5. Chỉ khi mọi tệp đều khớp, thư mục mới được đặt tên chính thức và có tệp ghi chép `backup.json`. Bản sao lưu bị lỗi hoặc bị hủy sẽ được xóa chứ không để lại dở dang, và bản chụp luôn được xóa khi xong.
@@ -257,49 +272,47 @@ Trước khi bắt đầu, ứng dụng kiểm tra ổ đĩa còn đủ chỗ. �
 
 **Khôi phục…** ở đầu cửa sổ (hoặc `zalo-profiles restore <thư mục sao lưu> <tên>`) khôi phục một bản sao lưu thành một tài khoản **mới**. Không bao giờ thay thế tài khoản đang có. Bản sao được kiểm tra với `backup.json` trước khi tài khoản xuất hiện. Máy Mac cần đủ chỗ cho bản sao lưu cộng thêm 5 GB dự phòng.
 
-Tài khoản khôi phục là cùng một tài khoản Zalo với tài khoản đã được sao lưu. Khi tài khoản gốc vẫn còn, đừng mở cả hai cùng lúc; `status` sẽ nhắc điều này. Nếu từ lúc sao lưu tài khoản đã đăng nhập ở nơi khác, Zalo có thể yêu cầu đăng nhập lại.
+Tài khoản khôi phục là cùng một tài khoản Zalo với tài khoản đã được sao lưu. Khi tài khoản gốc vẫn còn, ứng dụng không cho mở cả hai cùng lúc, và `status` sẽ nhắc điều này. Nếu từ lúc sao lưu tài khoản đã đăng nhập ở nơi khác, Zalo có thể yêu cầu đăng nhập lại.
 
 Đã thử ngày 20/10/2026 với một ổ cứng ngoài APFS:
 
 | Tài khoản | Số tệp | Dữ liệu | Zalo tạm đóng | Tổng thời gian |
 |---|---|---|---|---|
-| Đang mở ở cửa sổ thứ hai | 508 | 455 MB | dưới 2 giây | 1,9 giây |
+| Đang mở trong cửa sổ riêng | 508 | 455 MB | dưới 2 giây | 1,9 giây |
 | Đang mở trong Zalo chính | 48.056 (13.799 tệp là liên kết cứng) | 13,75 GB | khoảng 15 giây | 75 giây |
 
 - Cả hai lần Zalo đều tự mở lại và vẫn đăng nhập, còn cửa sổ kia không bị gián đoạn.
 - Bản sao lưu nhỏ hơn được khôi phục thành một tài khoản thử, trong lúc tài khoản gốc đã đóng, và mở ra vẫn đăng nhập.
 
-## Mở song song (thử nghiệm)
+## Nhiều cửa sổ Zalo cùng lúc
 
-<p align="center"><img src="docs/screenshots/song-song.png" width="860" alt="Hai cửa sổ Zalo của hai tài khoản chạy cùng lúc, với cửa sổ Zalo Switcher ở giữa"></p>
-<p align="center"><sub>Minh họa với dữ liệu giả lập.</sub></p>
-
-**Mở song song** ở một tài khoản đã lưu sẽ mở thêm một cửa sổ Zalo thứ hai trong khi Zalo chính vẫn chạy, để hai tài khoản cùng trực tuyến. Zalo thứ hai được mở với `CFFIXED_USER_HOME` trỏ tới thư mục của tài khoản đó. Nhờ vậy macOS cho nó một thư mục Application Support riêng, nên nó đọc và ghi `ZaloData` của chính tài khoản đó và không bao giờ chạm tới Zalo chính. Thư mục tài khoản có các liên kết tới Keychain thật của bạn (nơi Zalo giữ khóa mã hóa), cùng Tải về, Màn hình nền, Tài liệu, Ảnh, Phim và Nhạc.
-
-Ở tài khoản đang mở song song, **Hiện** đưa cửa sổ đó lên trước, **Đóng cửa sổ** thoát cửa sổ đó (như ⌘Q trong cửa sổ đó). Bạn cũng có thể **Thêm tài khoản → Thêm ở cửa sổ Zalo thứ hai…** để đăng nhập tài khoản mới mà không phải đóng Zalo chính.
+Tài khoản Zalo chính mở trong Zalo bình thường. Mỗi tài khoản khác mở trong một Zalo riêng với `CFFIXED_USER_HOME` trỏ tới thư mục của tài khoản đó. Nhờ vậy macOS cho nó một thư mục Application Support riêng, nên nó đọc và ghi `ZaloData` của chính tài khoản đó và không bao giờ chạm tới các Zalo khác. Thư mục tài khoản có các liên kết tới Keychain thật của bạn (nơi Zalo giữ khóa mã hóa), cùng Tải về, Màn hình nền, Tài liệu, Ảnh, Phim và Nhạc.
 
 Giới hạn đã biết:
 
-- **Cuộc gọi.** Phần gọi điện của Zalo liên lạc với ứng dụng qua các tệp socket cố định (`/tmp/socketzalosend2021`, `/tmp/socketzalorecv2021`). Mỗi Zalo mở lên sẽ chiếm các tệp này, nên gọi thoại và gọi video chỉ ổn định ở một cửa sổ, và Zalo chính có thể cần khởi động lại thì mới gọi được. Trước một cuộc gọi quan trọng, hãy đóng các cửa sổ mở song song và khởi động lại Zalo.
-- Hai cửa sổ có cùng biểu tượng Zalo trong Dock. Hãy phân biệt bằng tên tài khoản trên thanh tiêu đề (“Zalo - <tên tài khoản>”) hoặc ảnh đại diện.
-- Không thể chuyển sang hay xóa một tài khoản đang mở song song cho tới khi bạn đóng cửa sổ của nó.
+- **Cuộc gọi.** Phần gọi điện của Zalo liên lạc với ứng dụng qua các tệp socket cố định (`/tmp/socketzalosend2021`, `/tmp/socketzalorecv2021`). Mỗi Zalo mở lên sẽ chiếm các tệp này, nên gọi thoại và gọi video chỉ ổn định ở một cửa sổ. Trước một cuộc gọi quan trọng, hãy đóng các tài khoản khác, rồi đóng và mở lại tài khoản cần gọi.
+- **Biểu tượng giống nhau.** Mỗi cửa sổ có một biểu tượng Zalo riêng trong Dock, và thanh tiêu đề của mọi cửa sổ đều là “Zalo”. Hãy phân biệt bằng ảnh đại diện và tên tài khoản bên trong cửa sổ, hoặc bấm **Hiện** trong Zalo Switcher để đưa đúng cửa sổ lên trước.
+- **Một tài khoản Zalo, một cửa sổ.** Hai bản của cùng một tài khoản (ví dụ tài khoản và bản khôi phục của nó) không mở cùng lúc được.
+- **Đóng ở màn hình đăng nhập.** Ở màn hình đăng nhập, Zalo đôi khi đóng cửa sổ nhưng không thoát hẳn khi được yêu cầu thoát. Khi một Zalo như vậy không có tài khoản nào đăng nhập, Zalo Switcher gửi SIGTERM (yêu cầu thoát mà macOS cũng gửi khi tắt máy) để kết thúc nó. Một Zalo đang có tài khoản đăng nhập không bao giờ bị buộc thoát.
 
-Đã thử ngày 20/10/2026 với Zalo 26.8.20 trên macOS 26.1, một tài khoản trong Zalo chính và một tài khoản mở song song:
+Đã thử ngày 20/10/2026 với Zalo 26.8.20 trên macOS 26.1, một tài khoản trong Zalo chính và một tài khoản trong cửa sổ riêng:
 
 - Tài khoản thứ hai mở ra đã đăng nhập sẵn.
 - Mỗi Zalo chỉ có dữ liệu của tài khoản mình. Cửa sổ thứ hai mở 163 tệp, tất cả nằm trong thư mục tài khoản của nó, không tệp nào trong `ZaloData` chính.
 - Zalo chính vẫn chạy, không phải khởi động lại.
 - Zalo thứ hai đúng là chiếm các socket gọi điện như dự đoán. Chưa thử gọi điện.
 
+Ngày 21/10/2026, với bản 1.2.0, một tài khoản được mở rồi đóng bên cạnh Zalo chính hơn mười lần, kể cả bằng **Mở tất cả**. Zalo chính không bị khởi động lại lần nào. Tài khoản thử đã bị đăng xuất từ trước nên mỗi lần đều mở ra ở màn hình đăng nhập, và ở màn hình đó Zalo nhiều lần không thoát hẳn khi được đóng. Với cách xử lý ở trên, những lần đóng sau cùng xong trong 1 đến 5 giây.
+
 ## Lưu ý thêm
 
 - Tệp nhận được của mọi tài khoản đều vào thư mục Tải về như bình thường.
 - Nếu một bản cập nhật Zalo đổi thư mục dữ liệu, `zalo-profiles status` sẽ không tìm thấy nó nữa. Khi đó không có gì bị di chuyển.
-- Muốn thôi dùng Zalo Switcher: chuyển sang tài khoản bạn muốn giữ trong Zalo, thoát Zalo Switcher và xóa ứng dụng. Zalo tiếp tục với tài khoản đó. Dữ liệu của các tài khoản khác vẫn nằm trong `~/Library/Application Support/Zalo Profiles/<mã>/Library/Application Support/ZaloData`.
+- Muốn thôi dùng Zalo Switcher: đặt tài khoản bạn muốn giữ làm Zalo chính (**⋯ → Đặt làm Zalo chính…**), đóng các tài khoản khác, thoát Zalo Switcher và xóa ứng dụng. Zalo tiếp tục với tài khoản đó. Dữ liệu của các tài khoản khác vẫn nằm trong `~/Library/Application Support/Zalo Profiles/<mã>/Library/Application Support/ZaloData`.
 
 ### Ảnh minh họa
 
-Mọi ảnh trong README này chỉ dùng dữ liệu giả lập. Các ảnh cửa sổ Zalo Switcher do chính ứng dụng vẽ ra từ bản demo; ảnh mở song song và sơ đồ được dựng bằng HTML trong [`docs/screenshots/src`](docs/screenshots/src). Để tạo lại tất cả:
+Mọi ảnh trong README này chỉ dùng dữ liệu giả lập. Các ảnh cửa sổ Zalo Switcher do chính ứng dụng vẽ ra từ bản demo; ảnh nhiều cửa sổ Zalo và sơ đồ được dựng bằng HTML trong [`docs/screenshots/src`](docs/screenshots/src). Để tạo lại tất cả:
 
 ```bash
 docs/screenshots/make-screenshots.sh
@@ -310,7 +323,7 @@ docs/screenshots/make-screenshots.sh
 ```
 macos/              ứng dụng macOS và công cụ dòng lệnh (Swift package)
 windows/            dành cho ứng dụng Windows sau này (chưa bắt đầu)
-docs/               cách hoạt động của tài khoản và việc chuyển đổi, giống nhau trên mọi nền tảng
+docs/               cách hoạt động của tài khoản, giống nhau trên mọi nền tảng
 docs/screenshots/   ảnh minh họa của README và cách tạo lại chúng
 assets/icon/        biểu tượng ứng dụng: bản gốc SVG và các biểu tượng đã xuất cho macOS và Windows
 ```

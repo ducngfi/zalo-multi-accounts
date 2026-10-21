@@ -9,7 +9,8 @@ public enum ProfileError: LocalizedError, Equatable {
     case nothingToSave
     case alreadySaved(String)
     case isInMainZalo(String)
-    case openSideBySide(String)
+    case isOpen(String)
+    case sameAccountOpen(String, other: String)
     case zaloDidNotQuit
     case zaloNotInstalled(String)
     case conflict(String)
@@ -36,15 +37,17 @@ public enum ProfileError: LocalizedError, Equatable {
         case .emptyName:
             return "Hãy đặt tên cho tài khoản."
         case .currentDataNotSaved:
-            return "Tài khoản đang mở trong Zalo chưa được lưu. Hãy lưu tài khoản này trước, để tin nhắn và tệp của nó được giữ lại khi chuyển."
+            return "Zalo chính đang giữ một tài khoản chưa được lưu. Hãy lưu tài khoản đó trước, để tin nhắn và tệp của nó được giữ lại."
         case .nothingToSave:
             return "Zalo chưa có dữ liệu trên máy Mac này nên chưa có gì để lưu. Hãy thêm tài khoản mới."
         case .alreadySaved(let name):
             return "Tài khoản đang mở trong Zalo đã được lưu với tên “\(name)”."
         case .isInMainZalo(let name):
-            return "“\(name)” đang mở trong Zalo chính. Hãy chuyển sang tài khoản khác trước."
-        case .openSideBySide(let name):
-            return "“\(name)” đang mở ở cửa sổ Zalo thứ hai. Hãy đóng cửa sổ đó trước."
+            return "“\(name)” là tài khoản Zalo chính. Hãy đặt một tài khoản khác làm Zalo chính trước."
+        case .isOpen(let name):
+            return "“\(name)” đang mở. Hãy đóng cửa sổ Zalo của nó trước."
+        case .sameAccountOpen(let name, let other):
+            return "“\(name)” và “\(other)” là cùng một tài khoản Zalo, và “\(other)” đang mở. Mở một tài khoản ở hai cửa sổ cùng lúc có thể khiến Zalo đăng xuất hoặc đánh dấu tài khoản có hoạt động bất thường. Hãy đóng “\(other)” trước."
         case .zaloDidNotQuit:
             return "Zalo không thoát kịp (có thể đang có cuộc gọi hoặc một hộp thoại đang mở). Hãy tự thoát Zalo rồi thử lại. Chưa có gì bị di chuyển."
         case .zaloNotInstalled(let path):

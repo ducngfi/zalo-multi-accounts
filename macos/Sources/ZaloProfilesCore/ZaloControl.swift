@@ -44,11 +44,51 @@ public final class SystemZaloControl: ZaloControl {
         app.terminate()
 
         let deadline = Date().addingTimeInterval(timeout)
+        var windowsGoneSince: Date?
+        var accountOpen: Bool?
+        var lastSignal = Date.distantPast
         while Date() < deadline {
             if related.allSatisfy({ !isAlive($0) }) { return }
-            Thread.sleep(forTimeInterval: 0.25)
+            // At the login screen, Zalo closes its window and renderers when asked to quit, then may
+            // never exit. With no account open there is nothing to save, so after a moment finish the
+            // quit with SIGTERM, the polite request macOS also sends at shutdown, repeated every few
+            // seconds until it goes. A Zalo that still shows a window, or has an account's messages
+            // open, is never sent it.
+            if isAlive(pid), !hasRenderer(pid) {
+                let since = windowsGoneSince ?? Date()
+                windowsGoneSince = since
+                if Date().timeIntervalSince(since) > Self.stuckQuitGrace {
+                    if accountOpen == nil {
+                        accountOpen = hasAccountOpen(related.filter(isAlive), dataFolder: dataFolder)
+                    }
+                    if accountOpen == false, Date().timeIntervalSince(lastSignal) > 5 {
+                        kill(pid, SIGTERM)
+                        lastSignal = Date()
+                    }
+                }
+            } else {
+                windowsGoneSince = nil
+            }
+            Thread.sleep(forTimeInterval: 0.5)
         }
         throw ProfileError.zaloDidNotQuit
+    }
+
+    /// How long a Zalo at the login screen may sit without a window, still running, before SIGTERM.
+    static let stuckQuitGrace: TimeInterval = 3
+
+    /// Whether any of these processes has a Zalo account's databases open, that is, someone is logged in.
+    private func hasAccountOpen(_ pids: Set<pid_t>, dataFolder: URL) -> Bool {
+        let list = pids.map(String.init).joined(separator: ",")
+        // lsof exits with 1 when one of the processes has just gone.
+        guard !pids.isEmpty, let output = try? run("/usr/sbin/lsof", ["-n", "-P", "-Fn", "-p", list], allowFailure: true)
+        else { return true }
+        let accounts = "n" + dataFolder.appendingPathComponent("Database/_production").path + "/"
+        return output.split(separator: "\n").contains { line in
+            guard line.hasPrefix(accounts) else { return false }
+            let parts = line.dropFirst(accounts.count).split(separator: "/")
+            return parts.count > 1 && parts[0].count >= 6 && parts[0].allSatisfy(\.isNumber)
+        }
     }
 
     public func launchMain(app: URL) throws {
@@ -72,16 +112,31 @@ public final class SystemZaloControl: ZaloControl {
         kill(pid, 0) == 0 || errno == EPERM
     }
 
-    /// The main process, its descendants, and any process whose command line names the data folder.
+    /// Whether the process still has a renderer, that is, a window or page that could hold unsaved work.
+    private func hasRenderer(_ pid: pid_t) -> Bool {
+        guard let output = try? run("/bin/ps", ["-axww", "-o", "ppid=,command="]) else { return true }
+        return output.split(separator: "\n").contains { line in
+            let fields = line.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+            return fields.count == 2 && pid_t(fields[0]) == pid && fields[1].contains("--type=renderer")
+        }
+    }
+
+    /// The main process, its descendants, and any of Zalo's own processes whose command line names
+    /// the data folder (helpers that outlive their parent). Other programs that mention the folder,
+    /// such as a Terminal command, don't count.
     private func relatedProcesses(of root: pid_t, dataFolder: URL) -> Set<pid_t> {
         var result: Set<pid_t> = [root]
+        // Every Zalo process runs from inside the app bundle the main process runs from.
+        let appPath = NSRunningApplication(processIdentifier: root)?.bundleURL?.path ?? "/Applications/Zalo.app"
         guard let output = try? run("/bin/ps", ["-axww", "-o", "pid=,ppid=,command="]) else { return result }
         var children: [pid_t: [pid_t]] = [:]
         for line in output.split(separator: "\n") {
             let fields = line.split(separator: " ", maxSplits: 2, omittingEmptySubsequences: true)
             guard fields.count >= 2, let pid = pid_t(fields[0]), let ppid = pid_t(fields[1]) else { continue }
             children[ppid, default: []].append(pid)
-            if fields.count == 3, fields[2].contains(dataFolder.path) { result.insert(pid) }
+            if fields.count == 3, fields[2].hasPrefix(appPath), fields[2].contains(dataFolder.path) {
+                result.insert(pid)
+            }
         }
         var seen: Set<pid_t> = [root]
         var queue = [root]
