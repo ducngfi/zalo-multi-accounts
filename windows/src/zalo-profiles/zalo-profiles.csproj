@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>zalo-profiles</AssemblyName>
+    <RootNamespace>ZaloProfiles.Cli</RootNamespace>
+    <ApplicationIcon>..\..\..\assets\icon\AppIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ZaloProfiles.Core\ZaloProfiles.Core.csproj" />
+  </ItemGroup>
+</Project>

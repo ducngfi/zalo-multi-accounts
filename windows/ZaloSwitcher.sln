@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{26E6C562-ACD1-460C-BFED-8ABEED075350}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZaloProfiles.Core", "src\ZaloProfiles.Core\ZaloProfiles.Core.csproj", "{819242FA-7353-4B32-800B-30E5B499BCCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "zalo-profiles", "src\zalo-profiles\zalo-profiles.csproj", "{493CCDED-F229-442F-904C-A7FC1613F56B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZaloSwitcher", "src\ZaloSwitcher\ZaloSwitcher.csproj", "{58D72C14-9886-4690-BA43-88C2C0E30547}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{4CE4EDBA-B45F-41A9-8450-738320FF36FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZaloProfiles.Core.Tests", "tests\ZaloProfiles.Core.Tests\ZaloProfiles.Core.Tests.csproj", "{6B4593CC-DDE6-46F9-ACE3-37E77667F70C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZaloSwitcherSetup", "src\ZaloSwitcherSetup\ZaloSwitcherSetup.csproj", "{EC1D3E45-027A-4F5E-A537-87E08D125483}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{819242FA-7353-4B32-800B-30E5B499BCCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{819242FA-7353-4B32-800B-30E5B499BCCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{819242FA-7353-4B32-800B-30E5B499BCCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{819242FA-7353-4B32-800B-30E5B499BCCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{493CCDED-F229-442F-904C-A7FC1613F56B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{493CCDED-F229-442F-904C-A7FC1613F56B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{493CCDED-F229-442F-904C-A7FC1613F56B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{493CCDED-F229-442F-904C-A7FC1613F56B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58D72C14-9886-4690-BA43-88C2C0E30547}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58D72C14-9886-4690-BA43-88C2C0E30547}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58D72C14-9886-4690-BA43-88C2C0E30547}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58D72C14-9886-4690-BA43-88C2C0E30547}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B4593CC-DDE6-46F9-ACE3-37E77667F70C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B4593CC-DDE6-46F9-ACE3-37E77667F70C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B4593CC-DDE6-46F9-ACE3-37E77667F70C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B4593CC-DDE6-46F9-ACE3-37E77667F70C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC1D3E45-027A-4F5E-A537-87E08D125483}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC1D3E45-027A-4F5E-A537-87E08D125483}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC1D3E45-027A-4F5E-A537-87E08D125483}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC1D3E45-027A-4F5E-A537-87E08D125483}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{819242FA-7353-4B32-800B-30E5B499BCCC} = {26E6C562-ACD1-460C-BFED-8ABEED075350}
+		{493CCDED-F229-442F-904C-A7FC1613F56B} = {26E6C562-ACD1-460C-BFED-8ABEED075350}
+		{58D72C14-9886-4690-BA43-88C2C0E30547} = {26E6C562-ACD1-460C-BFED-8ABEED075350}
+		{6B4593CC-DDE6-46F9-ACE3-37E77667F70C} = {4CE4EDBA-B45F-41A9-8450-738320FF36FF}
+		{EC1D3E45-027A-4F5E-A537-87E08D125483} = {26E6C562-ACD1-460C-BFED-8ABEED075350}
+	EndGlobalSection
+EndGlobal
