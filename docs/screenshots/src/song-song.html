@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Mở song song</title>
+<!-- Illustration for the README: two Zalo windows side by side, with synthetic data only.
+     Rendered to ../song-song.png by ../make-screenshots.sh. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dark-bg: #1f2329; --dark-panel: #262b31; --dark-line: #343a42; --dark-text: #e6e8eb; --dark-dim: #9aa3ad;
+    --light-bg: #ffffff; --light-panel: #f3f5f8; --light-line: #e4e7ec; --light-text: #1d2129; --light-dim: #6b7380;
+    --blue: #0068ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1600px; height: 1040px; }
+  body {
+    font-family: "Be Vietnam Pro", sans-serif;
+    background: radial-gradient(1200px 800px at 15% 10%, #8fb6ff 0%, transparent 60%),
+                radial-gradient(1000px 700px at 90% 90%, #b39cff 0%, transparent 55%),
+                linear-gradient(135deg, #5b7cfa, #7f5af0);
+    position: relative; overflow: hidden; color: var(--light-text);
+  }
+  .menubar {
+    position: absolute; inset: 0 0 auto 0; height: 30px; background: rgba(255,255,255,.35);
+    backdrop-filter: blur(20px); display: flex; align-items: center; padding: 0 18px; gap: 22px;
+    font-size: 13px; font-weight: 500; color: #111;
+  }
+  .menubar .spacer { flex: 1; }
+  .menubar .switcher { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.55); padding: 2px 8px; border-radius: 6px; }
+
+  .label {
+    position: absolute; top: 46px; font-size: 15px; font-weight: 700; color: #fff;
+    display: flex; align-items: center; gap: 8px; text-shadow: 0 1px 2px rgba(0,0,0,.25);
+  }
+  .label .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .window {
+    position: absolute; top: 76px; width: 760px; height: 600px; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 24px 60px rgba(20, 20, 60, .35), 0 0 0 1px rgba(0,0,0,.12);
+    display: flex; flex-direction: column;
+  }
+  .titlebar { height: 30px; display: flex; align-items: center; padding: 0 12px; gap: 8px; font-size: 12.5px; font-weight: 600; }
+  .lights { display: flex; gap: 8px; margin-right: 10px; }
+  .lights i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .lights i:nth-child(1) { background: #ff5f57; } .lights i:nth-child(2) { background: #febc2e; } .lights i:nth-child(3) { background: #28c840; }
+  .body { flex: 1; display: flex; min-height: 0; }
+
+  .rail { width: 60px; display: flex; flex-direction: column; align-items: center; padding-top: 14px; gap: 18px; }
+  .rail .me { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 14px; }
+  .rail svg { width: 24px; height: 24px; opacity: .85; }
+  .rail .on { background: rgba(255,255,255,.18); border-radius: 10px; padding: 7px; width: 38px; height: 38px; }
+
+  .list { width: 270px; display: flex; flex-direction: column; }
+  .search { margin: 12px; height: 32px; border-radius: 8px; display: flex; align-items: center; padding: 0 10px; font-size: 13px; gap: 8px; }
+  .tabs { display: flex; gap: 16px; padding: 4px 14px 8px; font-size: 13px; font-weight: 600; }
+  .tabs b { border-bottom: 2px solid var(--blue); padding-bottom: 4px; color: var(--blue); }
+  .conv { display: flex; gap: 10px; padding: 9px 12px; align-items: center; }
+  .conv.active { border-radius: 8px; margin: 0 6px; padding: 9px 6px; }
+  .av { width: 44px; height: 44px; border-radius: 50%; flex: none; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 15px; }
+  .conv .text { flex: 1; min-width: 0; }
+  .conv .row { display: flex; justify-content: space-between; gap: 6px; }
+  .conv .name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .conv .time { font-size: 11.5px; flex: none; }
+  .conv .last { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .badge { background: #ff3b30; color: #fff; font-size: 10.5px; font-weight: 700; border-radius: 9px; padding: 0 6px; height: 17px; display: inline-grid; place-items: center; }
+
+  .chat { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .chat-head { height: 62px; display: flex; align-items: center; gap: 10px; padding: 0 16px; }
+  .chat-head .av { width: 40px; height: 40px; font-size: 14px; }
+  .chat-head .t { font-size: 15px; font-weight: 700; }
+  .chat-head .s { font-size: 12px; margin-top: 1px; }
+  .msgs { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+  .day { align-self: center; font-size: 11px; padding: 3px 10px; border-radius: 10px; }
+  .m { max-width: 78%; padding: 9px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.45; }
+  .m .who { font-size: 11.5px; font-weight: 600; margin-bottom: 2px; }
+  .m .at { font-size: 10.5px; margin-top: 4px; }
+  .m.out { align-self: flex-end; background: #dbebff; color: #10233f; }
+  .photo { width: 210px; height: 150px; border-radius: 12px; align-self: flex-end; display: grid; place-items: center;
+           background: linear-gradient(135deg, #ffd6e4, #ffe9c7); font-size: 54px; position: relative; }
+  .photo span { position: absolute; bottom: 8px; left: 10px; font-size: 11px; font-weight: 600; color: #8a4b5f; }
+  .input { height: 56px; display: flex; align-items: center; padding: 0 16px; font-size: 13px; gap: 12px; }
+
+  /* Dark window: the main Zalo. */
+  .dark { left: 34px; background: var(--dark-bg); color: var(--dark-text); }
+  .dark .titlebar { background: #15181c; color: var(--dark-dim); }
+  .dark .rail { background: #0f1216; }
+  .dark .rail svg { stroke: #c9d1db; }
+  .dark .list { background: var(--dark-panel); border-right: 1px solid var(--dark-line); }
+  .dark .search { background: #1b1f24; color: var(--dark-dim); }
+  .dark .tabs span, .dark .conv .time, .dark .conv .last, .dark .chat-head .s, .dark .m .at { color: var(--dark-dim); }
+  .dark .conv.active { background: #2f3d52; }
+  .dark .chat-head { border-bottom: 1px solid var(--dark-line); }
+  .dark .day { background: #2b3138; color: var(--dark-dim); }
+  .dark .m.in { background: #2b3138; }
+  .dark .m.out { background: #1d4f91; color: #eef4ff; }
+  .dark .m.out .at { color: #b8cdf0; }
+  .dark .input { border-top: 1px solid var(--dark-line); color: var(--dark-dim); }
+
+  /* Light window: the second Zalo. */
+  .light { right: 34px; background: var(--light-bg); }
+  .light .titlebar { background: #eceef2; color: var(--light-dim); }
+  .light .rail { background: #0a5ae0; }
+  .light .rail svg { stroke: #fff; }
+  .light .list { background: #fff; border-right: 1px solid var(--light-line); }
+  .light .search { background: var(--light-panel); color: var(--light-dim); }
+  .light .tabs span, .light .conv .time, .light .conv .last, .light .chat-head .s, .light .m .at { color: var(--light-dim); }
+  .light .conv.active { background: #e5efff; }
+  .light .chat { background: #eef1f5; }
+  .light .chat-head { background: #fff; border-bottom: 1px solid var(--light-line); }
+  .light .day { background: #c9ced6; color: #fff; }
+  .light .m.in { background: #fff; box-shadow: 0 1px 1px rgba(0,0,0,.05); }
+  .light .input { background: #fff; border-top: 1px solid var(--light-line); color: var(--light-dim); }
+
+  .switcher-window {
+    position: absolute; left: 50%; transform: translateX(-50%); top: 590px; width: 540px;
+    border-radius: 12px; overflow: hidden; box-shadow: 0 30px 70px rgba(10, 10, 50, .45), 0 0 0 1px rgba(0,0,0,.15);
+  }
+  .switcher-window img { display: block; width: 100%; }
+  .note {
+    position: absolute; right: 34px; bottom: 22px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.92);
+    background: rgba(0,0,0,.18); padding: 6px 12px; border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+  <div class="menubar">
+    <b>Zalo</b><span>Tệp</span><span>Sửa</span><span>Xem</span><span>Cửa sổ</span>
+    <div class="spacer"></div>
+    <span class="switcher">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><circle cx="9" cy="10" r="2.6"/><circle cx="15.5" cy="10.5" r="2.2"/><path d="M5 18c1-2.6 3-4 6-4s4.6 1.2 5.4 3"/></svg>
+      Cá nhân
+    </span>
+    <span>Thứ Ba 21 thg 10 &nbsp; 09:41</span>
+  </div>
+
+  <div class="label" style="left: 40px"><span class="dot" style="background:#34c759"></span>Zalo chính · tài khoản “Cá nhân”</div>
+  <div class="label" style="right: 40px"><span class="dot" style="background:#0a84ff"></span>Cửa sổ thứ hai · tài khoản “Cửa hàng Hoa Mai”</div>
+
+  <!-- Main Zalo: the personal account (synthetic). -->
+  <div class="window dark">
+    <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div>Zalo - Nguyễn Thu Hà</div>
+    <div class="body">
+      <div class="rail">
+        <div class="me" style="background:linear-gradient(135deg,#ff9a62,#f2603f)">TH</div>
+        <svg class="on" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M7 18c1-2.5 3-3.5 5-3.5s4 1 5 3.5"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M5 12l4 4 10-10"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 7h18v13H3zM8 7V4h8v3"/></svg>
+      </div>
+      <div class="list">
+        <div class="search">⌕ &nbsp;Tìm kiếm</div>
+        <div class="tabs"><b>Ưu tiên</b><span>Khác</span></div>
+        <div class="conv active">
+          <div class="av" style="background:linear-gradient(135deg,#3ec6a8,#1b8f78)">ĐL</div>
+          <div class="text"><div class="row"><div class="name">Nhóm Đà Lạt 2026</div><div class="time">2 phút</div></div>
+          <div class="last">Minh: Nhớ mang áo ấm nha 🧥</div></div>
+        </div>
+        <div class="conv">
+          <div class="av" style="background:linear-gradient(135deg,#ff7aa2,#e0457b)">GĐ</div>
+          <div class="text"><div class="row"><div class="name">Gia đình 🏠</div><div class="time">15 phút</div></div>
+          <div class="last">Mẹ: Tối nay về ăn cơm nhé con</div></div>
+        </div>
+        <div class="conv">
+          <div class="av" style="background:linear-gradient(135deg,#a78bfa,#7c5ce0)">LA</div>
+          <div class="text"><div class="row"><div class="name">Lan Anh</div><div class="time">1 giờ</div></div>
+          <div class="last">Cuối tuần đi cà phê không? ☕</div></div>
+        </div>
+        <div class="conv">
+          <div class="av" style="background:linear-gradient(135deg,#60a5fa,#2f6fe0)">QB</div>
+          <div class="text"><div class="row"><div class="name">Trần Quốc Bảo</div><div class="time">3 giờ</div></div>
+          <div class="last">Ok chị, mai em gửi file nhé</div></div>
+        </div>
+        <div class="conv">
+          <div class="av" style="background:linear-gradient(135deg,#fbbf24,#e08a0b)">YG</div>
+          <div class="text"><div class="row"><div class="name">Lớp Yoga sáng</div><div class="time">Hôm qua</div></div>
+          <div class="last">Cô Hạnh: Thứ Năm lớp nghỉ một buổi</div></div>
+        </div>
+        <div class="conv">
+          <div class="av" style="background:linear-gradient(135deg,#94a3b8,#64748b)">ĐL</div>
+          <div class="text"><div class="row"><div class="name">Phạm Đức Long</div><div class="time">Hôm qua</div></div>
+          <div class="last">Cảm ơn bạn nhiều nha!</div></div>
+        </div>
+      </div>
+      <div class="chat">
+        <div class="chat-head">
+          <div class="av" style="background:linear-gradient(135deg,#3ec6a8,#1b8f78)">ĐL</div>
+          <div><div class="t">Nhóm Đà Lạt 2026</div><div class="s">5 thành viên</div></div>
+        </div>
+        <div class="msgs">
+          <div class="day">09:30 Hôm nay</div>
+          <div class="m in"><div class="who">Minh</div>Mọi người ơi, mình đặt được homestay gần hồ Tuyền Lâm rồi nha 🎉<div class="at">09:31</div></div>
+          <div class="m in"><div class="who">Lan Anh</div>Tuyệt quá! Mấy giờ mình xuất phát?<div class="at">09:33</div></div>
+          <div class="m out">6 giờ sáng thứ Bảy nhé, mình qua đón Lan Anh trước rồi đón cả nhóm.<div class="at">09:35</div></div>
+          <div class="m in"><div class="who">Minh</div>Ok, nhớ mang áo ấm nha, Đà Lạt tháng này lạnh lắm 🧥<div class="at">09:39</div></div>
+        </div>
+        <div class="input">Nhập tin nhắn tới Nhóm Đà Lạt 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Second Zalo: the shop account (synthetic). -->
+  <div class="window light">
+    <div class="titlebar"><div class="lights"><i></i><i></i><i></i></div>Zalo - Cửa hàng Hoa Mai</div>
+    <div class="body">
+      <div class="rail">
+        <div class="me" style="background:linear-gradient(135deg,#5aa7ff,#1f6fe5); box-shadow:0 0 0 2px #fff">HM</div>
+        <svg class="on" viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M7 18c1-2.5 3-3.5 5-3.5s4 1 5 3.5"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M5 12l4 4 10-10"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M3 7h18v13H3zM8 7V4h8v3"/></svg>
+      </div>
+      <div class="list">
+        <div class="search">⌕ &nbsp;Tìm kiếm</div>
+        <div class="tabs"><b>Tất cả</b><span>Chưa đọc</span></div>
+        <div class="conv active">
+          <div class="av" style="background:linear-gradient(135deg,#f472b6,#d63f8c)">NH</div>
+          <div class="text"><div class="row"><div class="name">Chị Ngọc Hân</div><div class="time">1 phút</div></div>
+          <div class="last">Giao giúp chị trước 10h nhé</div></div>
+        </div>
+        <div class="conv">
+          <div class="av" style="background:linear-gradient(135deg,#34d399,#0f9f6e)">HN</div>
+          <div class="text"><div class="row"><div class="name">Anh Hoàng Nam</div><div class="time">8 phút</div></div>
+          <div class="last">Bó hồng 20 bông giá sao em? <span class="badge">2</span></div></div>
+        </div>
+        <div class="conv">
+          <div class="av" style="background:linear-gradient(135deg,#c08457,#8a5530)">CM</div>
+          <div class="text"><div class="row"><div class="name">Đơn sỉ - Cà phê Mộc</div><div class="time">32 phút</div></div>
+          <div class="last">Bên mình đã chuyển khoản rồi nhé</div></div>
+        </div>
+        <div class="conv">
+          <div class="av" style="background:linear-gradient(135deg,#fb923c,#e0611b)">GH</div>
+          <div class="text"><div class="row"><div class="name">Nhóm Giao hàng Hoa Mai</div><div class="time">1 giờ</div></div>
+          <div class="last">Tùng: Em lấy đơn lúc 14h</div></div>
+        </div>
+        <div class="conv">
+          <div class="av" style="background:linear-gradient(135deg,#818cf8,#5b5fd6)">NV</div>
+          <div class="text"><div class="row"><div class="name">Nhà vườn Đà Lạt</div><div class="time">Hôm qua</div></div>
+          <div class="last">Lô cúc tana về sáng thứ Sáu</div></div>
+        </div>
+        <div class="conv">
+          <div class="av" style="background:linear-gradient(135deg,#94a3b8,#64748b)">KL</div>
+          <div class="text"><div class="row"><div class="name">Khách lẻ quận 3</div><div class="time">Hôm qua</div></div>
+          <div class="last">Dạ em cảm ơn chị ạ</div></div>
+        </div>
+      </div>
+      <div class="chat">
+        <div class="chat-head">
+          <div class="av" style="background:linear-gradient(135deg,#f472b6,#d63f8c)">NH</div>
+          <div><div class="t">Chị Ngọc Hân</div><div class="s">Vừa truy cập</div></div>
+        </div>
+        <div class="msgs">
+          <div class="day">09:20 Hôm nay</div>
+          <div class="m in">Shop ơi, chị muốn đặt một bó hoa sinh nhật tông hồng pastel, khoảng 500 nghìn.<div class="at">09:21</div></div>
+          <div class="m out">Dạ chị, bên em có mẫu hồng pastel mix cúc tana, giá 480k ạ. Em gửi chị ảnh mẫu nhé.<div class="at">09:24</div></div>
+          <div class="photo">💐<span>Mẫu HM-12</span></div>
+          <div class="m in">Đẹp quá! Giao giúp chị trước 10h sáng mai nhé.<div class="at">09:40</div></div>
+        </div>
+        <div class="input">Nhập tin nhắn tới Chị Ngọc Hân</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="switcher-window"><img src="../cua-so-chinh.png" alt=""></div>
+  <div class="note">Minh họa với dữ liệu giả lập</div>
+</body>
+</html>

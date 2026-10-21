@@ -19,7 +19,7 @@ if running; then
         sleep 0.2
     done
     if running; then
-        echo "Zalo Switcher didn't quit (a dialog may be open). Quit it from its menu, then run this again." >&2
+        echo "Zalo Switcher chưa thoát (có thể đang mở một hộp thoại). Hãy thoát nó rồi chạy lại lệnh này." >&2
         exit 1
     fi
 fi
@@ -29,5 +29,5 @@ cp -R "build/Zalo Switcher.app" "$HOME/Applications/"
 cp build/zalo-profiles "$HOME/.local/bin/zalo-profiles"
 
 open "$HOME/Applications/Zalo Switcher.app"
-echo "Installed ~/Applications/Zalo Switcher.app (look for the two-person icon in the menu bar)"
-echo "Installed ~/.local/bin/zalo-profiles"
+echo "Đã cài ~/Applications/Zalo Switcher.app (cửa sổ của ứng dụng sẽ tự mở)"
+echo "Đã cài ~/.local/bin/zalo-profiles"

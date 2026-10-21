@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Cách hoạt động</title>
+<!-- Diagram for the README: how switching and side-by-side work. Rendered to ../cach-hoat-dong.png
+     by ../make-screenshots.sh. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #16202e; --dim: #5d6878; --line: #dde3ec; --blue: #1a66f0; --blue-soft: #e8f0ff; --green: #13a35b; --green-soft: #e3f6ec; --amber-soft: #fff4e0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1400px; height: 900px; }
+  body { font-family: "Be Vietnam Pro", sans-serif; color: var(--ink); background: #f6f8fb; padding: 44px 52px; }
+  h1 { font-size: 30px; font-weight: 800; letter-spacing: -.3px; }
+  .sub { font-size: 16px; color: var(--dim); margin-top: 6px; }
+  .steps { display: grid; grid-template-columns: 1fr 1.6fr 1fr; gap: 18px; margin-top: 30px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px; position: relative; }
+  .num { width: 30px; height: 30px; border-radius: 50%; background: var(--blue); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: 15px; }
+  .card h2 { font-size: 19px; font-weight: 700; margin-top: 12px; }
+  .card p { font-size: 14.5px; color: var(--dim); line-height: 1.55; margin-top: 8px; }
+  .folders { margin-top: 14px; display: grid; gap: 10px; }
+  .folder { border-radius: 10px; padding: 10px 12px; font-size: 13.5px; display: flex; align-items: center; gap: 10px; }
+  .folder code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; }
+  .folder .ic { font-size: 20px; }
+  .live { background: var(--blue-soft); border: 1px solid #c8daff; }
+  .parked { background: #f3f5f8; border: 1px solid var(--line); }
+  .folder b { font-weight: 700; }
+  .arrow { text-align: center; color: var(--blue); font-weight: 700; font-size: 13px; }
+  .rules { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .pill { background: var(--green-soft); color: #0d7a43; font-size: 13px; font-weight: 600; padding: 5px 11px; border-radius: 999px; }
+  .side { margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .side .card h2 { margin-top: 0; display: flex; align-items: center; gap: 10px; }
+  .tag { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+  .tag.blue { background: var(--blue-soft); color: var(--blue); }
+  .tag.amber { background: var(--amber-soft); color: #a8640a; }
+  .wins { display: flex; gap: 12px; margin-top: 14px; }
+  .win { flex: 1; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 13px; }
+  .win .bar { background: #eef1f5; padding: 6px 10px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+  .win .bar i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #ff5f57; box-shadow: 12px 0 #febc2e, 24px 0 #28c840; margin-right: 28px; }
+  .win .in { padding: 10px; color: var(--dim); line-height: 1.5; }
+  .win code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; color: var(--ink); }
+  .foot { margin-top: 18px; font-size: 13px; color: var(--dim); }
+</style>
+</head>
+<body>
+  <h1>Chuyển tài khoản = đổi chỗ thư mục dữ liệu</h1>
+  <div class="sub">Không sao chép, không xóa, không đăng xuất. Mỗi tài khoản giữ trọn bộ dữ liệu Zalo của riêng nó.</div>
+
+  <div class="steps">
+    <div class="card">
+      <div class="num">1</div>
+      <h2>Thoát Zalo</h2>
+      <p>Zalo được yêu cầu thoát như khi bạn bấm ⌘Q. Ứng dụng đợi Zalo và các tiến trình phụ đóng hẳn, không bao giờ buộc thoát. Nếu Zalo không thoát (đang gọi, đang mở hộp thoại), mọi thứ dừng lại và chưa có gì bị di chuyển.</p>
+    </div>
+    <div class="card">
+      <div class="num">2</div>
+      <h2>Đổi chỗ hai thư mục</h2>
+      <div class="folders">
+        <div class="folder live"><span class="ic">📁</span><div><b>Cá nhân</b> đang ở chỗ Zalo dùng<br><code>~/Library/Application Support/ZaloData</code></div></div>
+        <div class="arrow">↓ cất vào thư mục riêng của nó</div>
+        <div class="folder parked"><span class="ic">🗂️</span><div><code>Zalo Profiles/ca-nhan/…/ZaloData</code></div></div>
+        <div class="arrow">↑ đưa <b>Công ty An Phát</b> vào chỗ Zalo dùng</div>
+        <div class="folder parked"><span class="ic">🗂️</span><div><code>Zalo Profiles/cong-ty-an-phat/…/ZaloData</code></div></div>
+      </div>
+      <div class="rules"><span class="pill">Chỉ đổi tên thư mục</span><span class="pill">Tức thì, dù dữ liệu nhiều GB</span><span class="pill">Không tốn thêm dung lượng</span></div>
+    </div>
+    <div class="card">
+      <div class="num">3</div>
+      <h2>Mở lại Zalo</h2>
+      <p>Zalo mở ra với tài khoản mới, đã đăng nhập sẵn, đủ tin nhắn, ảnh và tệp. Tài khoản vừa cất đi không bị đăng xuất: tin nhắn của nó sẽ về khi bạn chuyển lại, giống như khi máy Mac tắt một thời gian.</p>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="card">
+      <h2>Mở song song <span class="tag amber">Thử nghiệm</span></h2>
+      <p>Một cửa sổ Zalo thứ hai được mở với “thư mục nhà” riêng của tài khoản đó, nên nó đọc và ghi dữ liệu của chính nó, không đụng tới Zalo chính.</p>
+      <div class="wins">
+        <div class="win"><div class="bar"><i></i>Zalo chính</div><div class="in">Cá nhân<br><code>…/ZaloData</code></div></div>
+        <div class="win"><div class="bar"><i></i>Cửa sổ thứ hai</div><div class="in">Cửa hàng Hoa Mai<br><code>Zalo Profiles/cua-hang-hoa-mai/…</code></div></div>
+      </div>
+      <p>Gọi thoại và gọi video chỉ ổn định ở một cửa sổ tại một thời điểm.</p>
+    </div>
+    <div class="card">
+      <h2>Sao lưu <span class="tag blue">Ổ cứng ngoài</span></h2>
+      <p>Zalo chỉ tạm đóng vài giây để chụp nhanh dữ liệu (bản chụp APFS gần như không tốn dung lượng), rồi tự mở lại. Việc sao chép sang ổ ngoài chạy ngầm, kiểm tra từng tệp, và giữ nguyên các liên kết cứng của Zalo nên bản sao lưu bằng đúng dung lượng gốc.</p>
+      <p>Khôi phục luôn tạo một tài khoản mới, không bao giờ ghi đè tài khoản đang có.</p>
+    </div>
+  </div>
+  <div class="foot">Tên tài khoản trong hình là dữ liệu giả lập.</div>
+</body>
+</html>

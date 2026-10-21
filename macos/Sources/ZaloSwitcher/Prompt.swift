@@ -1,6 +1,7 @@
 import AppKit
 
-/// Small modal dialogs. The app has no windows, so each one brings the app to the front first.
+/// Small modal dialogs. Each one brings the app to the front first, since it may be running
+/// without a window.
 @MainActor
 enum Prompt {
     static func text(title: String, message: String, placeholder: String, initial: String = "") -> String? {
@@ -8,8 +9,8 @@ enum Prompt {
         alert.messageText = title
         alert.informativeText = message
         alert.addButton(withTitle: "OK")
-        alert.addButton(withTitle: "Cancel")
-        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 280, height: 24))
+        alert.addButton(withTitle: "Hủy")
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
         field.placeholderString = placeholder
         field.stringValue = initial
         alert.accessoryView = field
@@ -26,7 +27,7 @@ enum Prompt {
         alert.informativeText = message
         alert.alertStyle = .warning
         alert.addButton(withTitle: button)
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: "Hủy")
         NSApp.activate(ignoringOtherApps: true)
         return alert.runModal() == .alertFirstButtonReturn
     }
@@ -48,6 +49,7 @@ enum Prompt {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = message
+        alert.addButton(withTitle: "OK")
         NSApp.activate(ignoringOtherApps: true)
         alert.runModal()
     }
@@ -57,6 +59,7 @@ enum Prompt {
         alert.messageText = "Zalo Switcher"
         alert.informativeText = error.localizedDescription
         alert.alertStyle = .warning
+        alert.addButton(withTitle: "OK")
         NSApp.activate(ignoringOtherApps: true)
         alert.runModal()
     }

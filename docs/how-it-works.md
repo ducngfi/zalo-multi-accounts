@@ -1,83 +1,83 @@
-# How Zalo Switcher works
+# Zalo Switcher hoạt động như thế nào
 
-This is the behaviour every version of Zalo Switcher follows, whatever the platform. The macOS version implements it in [`macos/Sources/ZaloProfilesCore`](../macos/Sources/ZaloProfilesCore). A Windows version should follow the same rules and use the same file formats, so that both behave the same way and are explained by the same README.
+Đây là cách hoạt động mà mọi phiên bản Zalo Switcher đều tuân theo, trên bất kỳ nền tảng nào. Bản macOS hiện thực nó trong [`macos/Sources/ZaloProfilesCore`](../macos/Sources/ZaloProfilesCore). Một bản Windows sau này nên theo cùng các quy tắc và dùng cùng định dạng tệp, để cả hai hoạt động giống nhau và dùng chung một README.
 
-Paths below are for macOS. Where a platform needs its own answer, the section says so.
+Các đường dẫn dưới đây là của macOS. Chỗ nào một nền tảng cần cách làm riêng, mục đó sẽ nói rõ.
 
-## The idea
+## Ý tưởng
 
-The Zalo desktop app keeps everything for the logged-in account (session, message database, photos, files, settings) in one data folder. On macOS that is `~/Library/Application Support/ZaloData`, and Zalo can't be pointed at another folder: it ignores `--user-data-dir`.
+Ứng dụng Zalo trên máy tính giữ mọi thứ của tài khoản đang đăng nhập (phiên đăng nhập, cơ sở dữ liệu tin nhắn, ảnh, tệp, cài đặt) trong một thư mục dữ liệu. Trên macOS đó là `~/Library/Application Support/ZaloData`, và không thể bảo Zalo dùng thư mục khác: Zalo bỏ qua `--user-data-dir`.
 
-So the switcher keeps one complete data folder per account, called a **profile**, and while Zalo is closed it renames the right one into the place where Zalo looks. The folder Zalo uses is the **main slot**. A profile whose data is in its own folder is **parked**.
+Vì vậy Zalo Switcher giữ cho mỗi tài khoản một thư mục dữ liệu đầy đủ, gọi là **hồ sơ** (profile), và trong lúc Zalo đóng thì đổi tên đúng thư mục vào chỗ Zalo tìm. Thư mục Zalo dùng gọi là **chỗ chính**. Một hồ sơ có dữ liệu nằm trong thư mục riêng của nó gọi là **đã cất**.
 
-## The profile store
+## Kho hồ sơ
 
 ```
-<profiles root>/
-    state.json                  which profile was last put in the main slot
-    <id>/profile.json           the profile's name and dates
-    <id>/<parked data path>     the profile's Zalo data while it is parked
+<thư mục hồ sơ>/
+    state.json                      hồ sơ nào được đưa vào chỗ chính lần gần nhất
+    <mã>/profile.json               tên và các mốc thời gian của hồ sơ
+    <mã>/<đường dẫn dữ liệu đã cất>  dữ liệu Zalo của hồ sơ khi đã cất
 ```
 
-On macOS the profiles root is `~/Library/Application Support/Zalo Profiles`, and the parked data path is `Library/Application Support/ZaloData`. Each profile folder is shaped like a home folder so that it can also be used as the home of a second Zalo (see [Side by side](#side-by-side-macos-only)).
+Trên macOS, thư mục hồ sơ là `~/Library/Application Support/Zalo Profiles`, và đường dẫn dữ liệu đã cất là `Library/Application Support/ZaloData`. Mỗi thư mục hồ sơ có dạng như một thư mục nhà (home), để có thể dùng làm thư mục nhà của một Zalo thứ hai (xem [Mở song song](#mở-song-song-chỉ-macos)).
 
 `profile.json`:
 
 ```json
 {
   "createdAt" : "2026-10-20T13:00:00Z",
-  "id" : "work",
+  "id" : "cua-hang",
   "lastUsedAt" : "2026-10-20T14:30:00Z",
-  "name" : "Work"
+  "name" : "Cửa hàng"
 }
 ```
 
-`lastUsedAt` is absent until the profile is first opened. `state.json` is `{ "main" : "<id>" }`. Dates are ISO 8601.
+`lastUsedAt` không có cho tới khi hồ sơ được mở lần đầu. `state.json` là `{ "main" : "<mã>" }`. Ngày giờ theo chuẩn ISO 8601.
 
-- **id**: the folder name, made from the name: accents removed and "đ" becomes "d", lowercase ASCII letters and digits kept, everything else turned into single dashes. If the id is taken, `-2`, `-3` and so on are added. An empty result becomes `profile`. Example: "Đức – Work" → `duc-work`.
-- **name**: free text, unique ignoring case and accents. A profile can be found by id or by name.
-- **marker**: a file `.zalo-profile-id` inside a data folder holds the id of the profile it belongs to, on one line.
+- **mã** (id): tên thư mục, tạo từ tên: bỏ dấu và “đ” thành “d”, giữ chữ cái ASCII viết thường và chữ số, mọi ký tự khác thành một dấu gạch ngang. Nếu mã đã có, thêm `-2`, `-3`, v.v. Nếu kết quả rỗng thì dùng `profile`. Ví dụ: “Đức – Công việc” → `duc-cong-viec`.
+- **tên** (name): văn bản tự do, không trùng nhau khi bỏ qua chữ hoa và dấu. Có thể tìm hồ sơ theo mã hoặc theo tên.
+- **dấu nhận biết** (marker): tệp `.zalo-profile-id` trong một thư mục dữ liệu, chứa mã của hồ sơ sở hữu thư mục đó, trên một dòng.
 
-## Which profile is in the main slot
+## Hồ sơ nào đang ở chỗ chính
 
-1. There is no main data folder: the slot is **empty**, and Zalo will start at the login screen.
-2. The marker in the main data folder names an existing profile: that profile is in the slot.
-3. Otherwise, if `state.json` names an existing profile and that profile has no parked folder: that profile is in the slot. (Zalo can remove the marker, for example after logging out.)
-4. Otherwise the slot holds **unsaved** data that belongs to no profile. Nothing may be switched until it is saved as a profile.
+1. Không có thư mục dữ liệu chính: chỗ chính **trống**, và Zalo sẽ mở ở màn hình đăng nhập.
+2. Dấu nhận biết trong thư mục dữ liệu chính ghi mã của một hồ sơ có thật: hồ sơ đó đang ở chỗ chính.
+3. Nếu không, nếu `state.json` ghi một hồ sơ có thật và hồ sơ đó không có thư mục đã cất: hồ sơ đó đang ở chỗ chính. (Zalo có thể xóa dấu nhận biết, ví dụ sau khi đăng xuất.)
+4. Nếu không nữa, chỗ chính chứa dữ liệu **chưa lưu**, không thuộc hồ sơ nào. Không được chuyển gì cho tới khi dữ liệu này được lưu thành hồ sơ.
 
-Each profile is then in the **main** slot, **parked** (it has a parked data folder), or **new** (it has never been opened).
+Mỗi hồ sơ khi đó ở **chỗ chính**, **đã cất** (có thư mục dữ liệu đã cất), hoặc **mới** (chưa từng được mở).
 
-## Switching to a profile
+## Chuyển sang một hồ sơ
 
-1. If the target is already in the main slot, start Zalo or bring it to the front. Done.
-2. Refuse if the main slot holds unsaved data, or if the target is open in a second window.
-3. If Zalo is running on the main data folder, ask it to quit the normal way (like ⌘Q) and wait up to 60 seconds for it and its helper processes to exit. Never force-quit. If it is still running, stop: nothing has been moved yet.
-4. If a profile is in the main slot, rename the main data folder to that profile's parked path.
-5. Rename the target's parked folder to the main data folder. If this fails, rename the previous profile's folder back, so Zalo opens as it was. If the target is new, create an empty main data folder (readable only by the user) instead, so Zalo starts at the login screen.
-6. Write the marker, save `state.json` and set the target's `lastUsedAt`.
-7. Start Zalo.
+1. Nếu hồ sơ cần chuyển đã ở chỗ chính, mở Zalo hoặc đưa Zalo lên trước. Xong.
+2. Từ chối nếu chỗ chính chứa dữ liệu chưa lưu, hoặc hồ sơ cần chuyển đang mở ở cửa sổ thứ hai.
+3. Nếu Zalo đang chạy trên thư mục dữ liệu chính, yêu cầu Zalo thoát theo cách bình thường (như ⌘Q) và đợi tối đa 60 giây cho Zalo và các tiến trình phụ đóng hẳn. Không bao giờ buộc thoát. Nếu Zalo vẫn chạy, dừng lại: chưa có gì bị di chuyển.
+4. Nếu có hồ sơ ở chỗ chính, đổi tên thư mục dữ liệu chính thành đường dẫn đã cất của hồ sơ đó.
+5. Đổi tên thư mục đã cất của hồ sơ cần chuyển thành thư mục dữ liệu chính. Nếu bước này lỗi, đổi tên thư mục của hồ sơ trước trở lại, để Zalo mở như cũ. Nếu hồ sơ cần chuyển là hồ sơ mới, tạo một thư mục dữ liệu chính trống (chỉ người dùng đọc được) thay vào đó, để Zalo mở ở màn hình đăng nhập.
+6. Ghi dấu nhận biết, lưu `state.json` và đặt `lastUsedAt` của hồ sơ.
+7. Mở Zalo.
 
-## Safety rules
+## Quy tắc an toàn
 
-These are what make switching safe. Every version must keep them.
+Đây là những gì làm cho việc chuyển an toàn. Mọi phiên bản đều phải giữ chúng.
 
-- **Only renames.** Every change of place is a rename within one disk. It is instant, needs no free space and can't be left half done. A rename that would replace something at the destination, or that would have to copy because the destination is on another disk, must fail instead. (macOS: `renamex_np` with `RENAME_EXCL`.)
-- **Never delete Zalo data.** Removing a profile moves its whole folder to the Trash (Recycle Bin), where it can be put back. The profile in the main slot, and one open in a second window, can't be removed.
-- **Never force-quit Zalo.** A forced quit can leave its databases halfway through a write.
-- **Stop when unsure.** Anything unexpected (a folder in the way, Zalo still running, a missing profile) stops the operation before anything moves, with a message that says why.
-- **Watch the free space.** Below 5 GB free on the disk with Zalo's data, warn, and ask before adding an account or opening one in a second window (`--force` on the command line). Zalo writes messages as they arrive, and a full disk is the main way its data gets damaged.
+- **Chỉ đổi tên.** Mọi lần di chuyển đều là đổi tên trên cùng một ổ đĩa. Việc này tức thì, không cần dung lượng trống và không thể bị bỏ dở. Một lần đổi tên mà sẽ thay thế thứ gì đó ở nơi đến, hoặc sẽ phải sao chép vì nơi đến ở ổ đĩa khác, phải thất bại thay vì làm. (macOS: `renamex_np` với `RENAME_EXCL`.)
+- **Không bao giờ xóa dữ liệu Zalo.** Xóa một hồ sơ sẽ chuyển cả thư mục của nó vào Thùng rác, nơi có thể lấy lại. Không thể xóa hồ sơ đang ở chỗ chính, hay hồ sơ đang mở ở cửa sổ thứ hai.
+- **Không bao giờ buộc Zalo thoát.** Buộc thoát có thể khiến cơ sở dữ liệu của Zalo bị ghi dở.
+- **Dừng lại khi không chắc.** Bất cứ điều gì bất thường (một thư mục chắn đường, Zalo vẫn chạy, thiếu hồ sơ) đều dừng thao tác trước khi có gì bị di chuyển, kèm thông báo nói rõ lý do.
+- **Để ý dung lượng trống.** Khi ổ đĩa chứa dữ liệu Zalo còn trống dưới 5 GB (hoặc mức người dùng chọn), cảnh báo, và hỏi trước khi thêm tài khoản hay mở một tài khoản ở cửa sổ thứ hai (`--force` trong dòng lệnh). Zalo ghi tin nhắn ngay khi chúng đến, và ổ đĩa đầy là nguyên nhân chính khiến dữ liệu của nó bị hỏng.
 
-## Telling whether Zalo has a folder open
+## Biết Zalo có đang mở một thư mục hay không
 
-The Zalo desktop app is built on Electron (Chromium). On macOS, while a data folder is open, Chromium keeps a `SingletonLock` symbolic link in it that points to `<host>-<pid>`. The switcher reads the pid and checks that the process is alive and is Zalo (bundle id `com.vng.zalo`). Each platform needs its own way to find this.
+Ứng dụng Zalo trên máy tính được xây dựng trên Electron (Chromium). Trên macOS, khi một thư mục dữ liệu đang mở, Chromium giữ trong đó một liên kết tượng trưng `SingletonLock` trỏ tới `<máy>-<pid>`. Zalo Switcher đọc pid và kiểm tra tiến trình còn chạy và đúng là Zalo (bundle id `com.vng.zalo`). Mỗi nền tảng cần cách riêng để biết điều này.
 
-## The Zalo account in a data folder
+## Tài khoản Zalo trong một thư mục dữ liệu
 
-The Zalo account id is the name of the most recently modified folder made only of digits (at least six) in `<data folder>/Database/_production/`. It is used to point out two profiles that hold the same account, for example after restoring a backup.
+ID tài khoản Zalo là tên của thư mục chỉ gồm chữ số (ít nhất sáu chữ số) được sửa gần nhất trong `<thư mục dữ liệu>/Database/_production/`. ID này được dùng để chỉ ra hai hồ sơ cùng chứa một tài khoản, ví dụ sau khi khôi phục một bản sao lưu.
 
-## Backups
+## Sao lưu
 
-A backup is a folder `<destination>/Zalo Backups/<id> <yyyy-MM-dd HH.mm>/` containing `ZaloData/` and `backup.json`:
+Một bản sao lưu là thư mục `<nơi lưu>/Zalo Backups/<mã> <yyyy-MM-dd HH.mm>/` chứa `ZaloData/` và `backup.json`:
 
 ```json
 {
@@ -86,18 +86,22 @@ A backup is a folder `<destination>/Zalo Backups/<id> <yyyy-MM-dd HH.mm>/` conta
   "files" : 508,
   "format" : 1,
   "links" : 0,
-  "profileID" : "work",
-  "profileName" : "Work",
+  "profileID" : "cua-hang",
+  "profileName" : "Cửa hàng",
   "zaloUserID" : "123456789"
 }
 ```
 
-- `files` counts every file name, including the extra names of hard-linked files. `bytes` counts hard-linked data once. `links` is how many names were recreated as hard links.
-- Making one: close Zalo for that profile only while a consistent copy is taken (macOS: an APFS clone, a few seconds), reopen Zalo, then copy to the destination in the background, checking every file's size. The copy is written under the name `<name>.partial` and gets its final name and `backup.json` only when everything checks out. A failed or cancelled copy is removed.
-- Restoring one: copy `ZaloData/` into a staging folder inside the profiles root, check it against `backup.json`, and only then make it a **new** profile. A restore never replaces an existing profile.
+- `files` đếm mọi tên tệp, kể cả các tên phụ của tệp liên kết cứng. `bytes` đếm dữ liệu liên kết cứng một lần. `links` là số tên được tạo lại dưới dạng liên kết cứng.
+- Tạo bản sao lưu: chỉ đóng Zalo của hồ sơ đó trong lúc lấy một bản sao nhất quán (macOS: một bản chụp APFS, vài giây), mở lại Zalo, rồi sao chép sang nơi lưu ở chế độ chạy ngầm, kiểm tra kích thước từng tệp. Bản sao được ghi dưới tên `<tên>.partial` và chỉ được đặt tên chính thức cùng `backup.json` khi mọi thứ đều khớp. Bản sao bị lỗi hoặc bị hủy sẽ bị xóa.
+- Khôi phục: sao chép `ZaloData/` vào một thư mục tạm trong thư mục hồ sơ, kiểm tra với `backup.json`, rồi mới biến nó thành một hồ sơ **mới**. Khôi phục không bao giờ thay thế hồ sơ đang có.
 
-## Side by side (macOS only)
+## Mở song song (chỉ macOS)
 
-Experimental. A parked profile can be opened in a second Zalo while the main one keeps running: Zalo is started with `CFFIXED_USER_HOME` set to the profile folder, so its Application Support folder, and with it its data folder, is the profile's own. The profile folder gets symbolic links to the real Keychain, Downloads, Desktop, Documents, Pictures, Movies and Music. Calls only work reliably in one window, because Zalo's call helper uses fixed socket paths.
+Thử nghiệm. Một hồ sơ đã cất có thể được mở trong một Zalo thứ hai trong khi Zalo chính vẫn chạy: Zalo được mở với `CFFIXED_USER_HOME` trỏ tới thư mục hồ sơ, nên thư mục Application Support của nó, và theo đó thư mục dữ liệu của nó, là của riêng hồ sơ. Thư mục hồ sơ có các liên kết tượng trưng tới Keychain thật, Tải về, Màn hình nền, Tài liệu, Ảnh, Phim và Nhạc. Gọi điện chỉ ổn định ở một cửa sổ, vì phần gọi điện của Zalo dùng đường dẫn socket cố định.
 
-Other platforms would need a different way to give a second Zalo its own data folder, or may not support this at all.
+Các nền tảng khác sẽ cần cách khác để cho Zalo thứ hai một thư mục dữ liệu riêng, hoặc có thể không hỗ trợ việc này.
+
+## Bản demo
+
+`Zalo Switcher --demo` (và `--render-screenshots <thư mục>`, dùng để tạo ảnh cho README) chạy toàn bộ logic thật trên bốn hồ sơ giả lập trong một thư mục tạm, với một “Zalo giả” không mở ứng dụng nào. Bản demo không bao giờ đọc hay ghi dữ liệu Zalo thật, và xóa hồ sơ trong bản demo chỉ chuyển nó vào thư mục tạm đó.

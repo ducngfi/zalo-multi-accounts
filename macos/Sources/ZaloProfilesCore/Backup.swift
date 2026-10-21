@@ -97,7 +97,7 @@ extension ProfileManager {
 
         var reopen: (() throws -> Void)?
         if status.runningPID != nil {
-            progress("Closing Zalo for a moment…")
+            progress("Đang tạm đóng Zalo…")
             try zalo.quit(dataFolder: data, timeout: quitTimeout)
             if zalo.pidUsing(dataFolder: data) != nil { throw ProfileError.zaloDidNotQuit }
             let app = layout.zaloApp
@@ -108,12 +108,12 @@ extension ProfileManager {
         }
         defer {
             if let reopen {
-                progress("Reopening Zalo…")
+                progress("Đang mở lại Zalo…")
                 try? reopen()
             }
         }
 
-        progress("Taking a snapshot of \(status.profile.name)…")
+        progress("Đang chụp nhanh dữ liệu của \(status.profile.name)…")
         let stamp = Int(Date().timeIntervalSince1970)
         let folder = layout.profilesRoot.appendingPathComponent("\(Self.snapshotPrefix)\(stamp)-\(UUID().uuidString)")
         guard clonefile(data.path, folder.path, 0) == 0 else {
@@ -162,7 +162,7 @@ extension ProfileManager {
         try fm.createDirectory(at: partial, withIntermediateDirectories: false)
         do {
             let copied = try copyTree(from: snapshot.folder, to: partial.appendingPathComponent("ZaloData"),
-                                      label: "Backing up \(snapshot.profile.name)", linkGroups: snapshot.linkGroups,
+                                      label: "Đang sao lưu \(snapshot.profile.name)", linkGroups: snapshot.linkGroups,
                                       progress: progress, cancel: cancel)
             let info = BackupInfo(profileID: snapshot.profile.id, profileName: snapshot.profile.name,
                                   zaloUserID: snapshot.zaloUserID, createdAt: Date(),
@@ -203,7 +203,7 @@ extension ProfileManager {
         // Leave Zalo the usual spare room after the restored data is in.
         let needed = info.bytes + lowSpaceThreshold
         if let free = freeSpace(), free < needed {
-            throw ProfileError.notEnoughSpace(place: "this Mac", needed: needed, free: free)
+            throw ProfileError.notEnoughSpace(place: "máy Mac này", needed: needed, free: free)
         }
         removeStaleTemporaryFolders()
         try fm.createDirectory(at: layout.profilesRoot, withIntermediateDirectories: true)
@@ -211,9 +211,9 @@ extension ProfileManager {
         let staging = layout.profilesRoot.appendingPathComponent("\(Self.restorePrefix)\(stamp)-\(UUID().uuidString)")
         do {
             let copied = try copyTree(from: folder.appendingPathComponent("ZaloData"), to: staging,
-                                      label: "Restoring \(clean)", progress: progress, cancel: cancel)
+                                      label: "Đang khôi phục \(clean)", progress: progress, cancel: cancel)
             guard copied.files == info.files, copied.bytes == info.bytes else {
-                throw ProfileError.copyMismatch("the backup (\(copied.files) files, \(Disk.format(copied.bytes)); backup.json says \(info.files) files, \(Disk.format(info.bytes)))")
+                throw ProfileError.copyMismatch("bản sao lưu (\(copied.files) tệp, \(Disk.format(copied.bytes)); backup.json ghi \(info.files) tệp, \(Disk.format(info.bytes)))")
             }
             let profile = try createProfile(named: clean)
             let target = layout.parkedData(profile.id)
@@ -235,7 +235,7 @@ extension ProfileManager {
                   progress: (String) -> Void, cancel: CancelFlag) throws -> (files: Int, bytes: Int64, links: Int) {
         let groups = linkGroups ?? hardLinkGroups(in: source)
         guard let scan = fm.enumerator(atPath: source.path) else {
-            throw ProfileError.copyFailed(source.path, reason: "it can't be read")
+            throw ProfileError.copyFailed(source.path, reason: "không đọc được")
         }
         var items: [(path: String, isDirectory: Bool, size: Int64)] = []
         var total: Int64 = 0
@@ -288,7 +288,7 @@ extension ProfileManager {
             let percent = total > 0 ? min(100, Int(copied * 100 / total)) : 100
             if percent != reported {
                 reported = percent
-                progress("\(label)… \(percent)% (\(Disk.format(copied)) of \(Disk.format(total)))")
+                progress("\(label)… \(percent)% (\(Disk.format(copied)) / \(Disk.format(total)))")
             }
         }
         return (files, copied, links)

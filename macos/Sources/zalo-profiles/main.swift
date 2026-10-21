@@ -2,71 +2,75 @@ import Foundation
 import ZaloProfilesCore
 
 let usage = """
-zalo-profiles: keep several Zalo accounts on this Mac and switch between them without logging out.
+zalo-profiles: giữ nhiều tài khoản Zalo trên một máy Mac và chuyển qua lại mà không cần đăng xuất.
 
-Usage:
-  zalo-profiles status                 Show what is in Zalo now, every profile and its size
-  zalo-profiles save <name>            Save the account that is in Zalo now as a profile
-  zalo-profiles add <name>             Add an empty profile and switch to it (log in once)
-  zalo-profiles switch <profile>       Quit Zalo, swap in <profile>'s data, start Zalo again
-        [--no-launch]                  ...and don't start Zalo afterwards
-  zalo-profiles open <profile>         Open <profile> in a second Zalo window (experimental)
-  zalo-profiles close <profile>        Quit the Zalo window that has <profile> open
-  zalo-profiles backup <profile> <folder>
-                                       Back up a profile into <folder>/Zalo Backups/
-  zalo-profiles restore <backup folder> <name>
-                                       Restore a backup as a new profile called <name>
-  zalo-profiles rename <profile> <new name>
-  zalo-profiles remove <profile>       Move a profile and its data to the Trash
-  zalo-profiles paths                  Show where the data lives
+Cách dùng:
+  zalo-profiles status                 Xem tài khoản đang mở trong Zalo, mọi tài khoản và dung lượng
+  zalo-profiles save <tên>             Lưu tài khoản đang mở trong Zalo
+  zalo-profiles add <tên>              Thêm tài khoản mới và chuyển sang (đăng nhập một lần)
+  zalo-profiles switch <tài khoản>     Thoát Zalo, đổi sang dữ liệu của <tài khoản>, mở lại Zalo
+        [--no-launch]                  ...và không mở lại Zalo
+  zalo-profiles open <tài khoản>       Mở <tài khoản> ở cửa sổ Zalo thứ hai (thử nghiệm)
+  zalo-profiles close <tài khoản>      Đóng cửa sổ Zalo đang mở <tài khoản>
+  zalo-profiles backup <tài khoản> <thư mục>
+                                       Sao lưu tài khoản vào <thư mục>/Zalo Backups/
+  zalo-profiles restore <thư mục sao lưu> <tên>
+                                       Khôi phục bản sao lưu thành tài khoản mới tên <tên>
+  zalo-profiles rename <tài khoản> <tên mới>
+  zalo-profiles remove <tài khoản>     Chuyển tài khoản và dữ liệu của nó vào Thùng rác
+  zalo-profiles paths                  Xem nơi lưu dữ liệu
 
-<profile> is a profile's name or id. When the Mac's disk is nearly full, add and open
-refuse to run unless you add --force.
+<tài khoản> là tên hoặc mã của tài khoản. Khi ổ đĩa của máy Mac sắp đầy, lệnh add và open
+sẽ từ chối chạy, trừ khi bạn thêm --force.
 """
 
 let manager = ProfileManager()
+// The app's setting for when to warn about free space applies here too.
+if let gigabytes = UserDefaults(suiteName: "local.zalo-switcher")?.object(forKey: "lowSpaceGB") as? Int {
+    manager.lowSpaceThreshold = Int64(gigabytes) * 1_000_000_000
+}
 
 func describe(_ status: ProfileStatus) -> String {
     var parts: [String] = []
     switch status.place {
-    case .main: parts.append(status.runningPID == nil ? "in Zalo (not running)" : "in Zalo, running")
-    case .parked: parts.append(status.runningPID == nil ? "saved" : "open side by side")
-    case .new: parts.append("new, not logged in yet")
+    case .main: parts.append(status.runningPID == nil ? "trong Zalo chính (chưa mở)" : "trong Zalo chính, đang chạy")
+    case .parked: parts.append(status.runningPID == nil ? "đã lưu" : "đang mở ở cửa sổ thứ hai")
+    case .new: parts.append("mới, chưa đăng nhập")
     }
     if let size = manager.dataSize(of: status) { parts.append(Disk.format(size)) }
-    if let uid = status.zaloUserID { parts.append("Zalo id \(uid)") }
+    if let uid = status.zaloUserID { parts.append("ID Zalo \(uid)") }
     return parts.joined(separator: ", ")
 }
 
 func printStatus() {
     switch manager.mainSlot() {
     case .empty:
-        print("Zalo: no data yet (it will start at the login screen)")
+        print("Zalo: chưa có dữ liệu (Zalo sẽ mở ở màn hình đăng nhập)")
     case .unsaved:
-        let uid = manager.mainZaloUserID().map { " (Zalo id \($0))" } ?? ""
-        print("Zalo: an account that isn't saved as a profile yet\(uid)")
-        print("      Save it first:  zalo-profiles save \"<name>\"")
+        let uid = manager.mainZaloUserID().map { " (ID Zalo \($0))" } ?? ""
+        print("Zalo: một tài khoản chưa được lưu\(uid)")
+        print("      Hãy lưu trước:  zalo-profiles save \"<tên>\"")
     case .profile(let id):
         let name = manager.profiles().first { $0.id == id }?.name ?? id
         print("Zalo: \(name)")
     }
-    if let pid = manager.mainZaloPID() { print("      running (pid \(pid))") }
-    if let free = manager.freeSpace() { print("Disk: \(Disk.format(free)) free on this Mac") }
-    if let warning = manager.lowSpaceWarning() { print("Warning: \(warning)") }
+    if let pid = manager.mainZaloPID() { print("      đang chạy (pid \(pid))") }
+    if let free = manager.freeSpace() { print("Ổ đĩa: còn trống \(Disk.format(free))") }
+    if let warning = manager.lowSpaceWarning() { print("Cảnh báo: \(warning)") }
     let statuses = manager.statuses()
     print("")
     if statuses.isEmpty {
-        print("No profiles yet.")
+        print("Chưa có tài khoản nào.")
         return
     }
-    print("Profiles:")
+    print("Tài khoản:")
     var seen: [String: String] = [:]
     for status in statuses {
         let mark = status.place == .main ? "*" : " "
         print(" \(mark) \(status.profile.name)  [\(status.profile.id)]  \(describe(status))")
         if let uid = status.zaloUserID {
             if let other = seen[uid] {
-                print("     note: same Zalo account as “\(other)”; don't open both at the same time")
+                print("     lưu ý: cùng tài khoản Zalo với “\(other)”; đừng mở cả hai cùng lúc")
             }
             seen[uid] = status.profile.name
         }
@@ -89,7 +93,7 @@ func cancelOnInterrupt() -> CancelFlag {
     signal(SIGINT, SIG_IGN)
     let source = DispatchSource.makeSignalSource(signal: SIGINT, queue: .global())
     source.setEventHandler {
-        print("\nStopping…")
+        print("\nĐang dừng…")
         flag.cancel()
     }
     source.resume()
@@ -116,8 +120,8 @@ func main() -> Int32 {
 
     func checkSpace() throws {
         guard let warning = manager.lowSpaceWarning() else { return }
-        guard force else { throw LowSpace(message: warning + " Add --force to go ahead anyway.") }
-        print("Warning: \(warning)")
+        guard force else { throw LowSpace(message: warning + " Thêm --force để vẫn tiếp tục.") }
+        print("Cảnh báo: \(warning)")
     }
 
     do {
@@ -127,71 +131,72 @@ func main() -> Int32 {
         case "save":
             try need(1)
             let profile = try manager.saveCurrent(as: rest[0])
-            print("Saved the account in Zalo as “\(profile.name)” [\(profile.id)].")
+            print("Đã lưu tài khoản đang mở trong Zalo với tên “\(profile.name)” [\(profile.id)].")
         case "add":
             try need(1)
             if manager.mainSlot() == .unsaved { throw ProfileError.currentDataNotSaved }
             try checkSpace()
             let profile = try manager.addProfile(named: rest[0])
-            print("Added “\(profile.name)” [\(profile.id)].")
+            print("Đã thêm “\(profile.name)” [\(profile.id)].")
             try manager.switchTo(profile.id, launch: !noLaunch) { print($0) }
-            if !noLaunch { print("Log in to the new account in Zalo. Next time, switching back needs no login.") }
+            if !noLaunch { print("Hãy đăng nhập tài khoản mới trong Zalo. Lần sau chuyển lại không cần đăng nhập nữa.") }
         case "switch", "use":
             try need(1)
             let profile = try manager.find(rest[0])
             try manager.switchTo(profile.id, launch: !noLaunch) { print($0) }
-            print("Zalo now uses “\(profile.name)”.")
-            if let warning = manager.lowSpaceWarning() { print("Warning: \(warning)") }
+            print("Zalo đang dùng “\(profile.name)”.")
+            if let warning = manager.lowSpaceWarning() { print("Cảnh báo: \(warning)") }
         case "open":
             try need(1)
             let profile = try manager.find(rest[0])
             try checkSpace()
             try manager.openSideBySide(profile.id)
-            print("Opened “\(profile.name)” in its own Zalo window.")
-            print("Note: voice and video calls only work reliably in one Zalo window at a time.")
+            print("Đã mở “\(profile.name)” ở cửa sổ Zalo riêng.")
+            print("Lưu ý: gọi thoại và gọi video chỉ ổn định ở một cửa sổ Zalo tại một thời điểm.")
         case "close":
             try need(1)
             let profile = try manager.find(rest[0])
             try manager.close(profile.id)
-            print("Closed “\(profile.name)”.")
+            print("Đã đóng “\(profile.name)”.")
         case "backup":
             try need(2)
             let profile = try manager.find(rest[0])
             let destination = URL(fileURLWithPath: (rest[1] as NSString).expandingTildeInPath, isDirectory: true)
             if manager.isOnThisMacsDisk(destination) {
-                print("Note: \(destination.path) is on this Mac's own disk. The backup uses its free space and won't survive the disk failing; an external drive is safer.")
+                print("Lưu ý: \(destination.path) nằm trên ổ đĩa của chính máy Mac này. Bản sao lưu sẽ dùng dung lượng trống của ổ và không còn nếu ổ hỏng; ổ cứng ngoài an toàn hơn.")
             }
             let cancel = cancelOnInterrupt()
             let folder = try manager.backup(profile.id, to: destination, progress: report, cancel: cancel)
             let info = try manager.readBackup(folder)
-            let links = (info.links ?? 0) > 0 ? " (\(info.links!) of them hard links, kept as in Zalo's folder)" : ""
-            print("\nBacked up “\(profile.name)”: \(info.files) files\(links), \(Disk.format(info.bytes)), every file checked.")
-            print("Saved in \(folder.path)")
+            let links = (info.links ?? 0) > 0 ? " (\(info.links!) tệp là liên kết cứng, giữ nguyên như trong thư mục của Zalo)" : ""
+            print("\nĐã sao lưu “\(profile.name)”: \(info.files) tệp\(links), \(Disk.format(info.bytes)), đã kiểm tra từng tệp.")
+            print("Lưu tại \(folder.path)")
         case "restore":
             try need(2)
             let folder = URL(fileURLWithPath: (rest[0] as NSString).expandingTildeInPath, isDirectory: true)
             let info = try manager.readBackup(folder)
-            print("Backup of “\(info.profileName)” from \(info.createdAt.formatted(date: .abbreviated, time: .shortened)): \(info.files) files, \(Disk.format(info.bytes)).")
+            let date = info.createdAt.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened).locale(Locale(identifier: "vi_VN")))
+            print("Bản sao lưu “\(info.profileName)” lúc \(date): \(info.files) tệp, \(Disk.format(info.bytes)).")
             let cancel = cancelOnInterrupt()
             let profile = try manager.restore(from: folder, as: rest[1], progress: report, cancel: cancel)
-            print("\nRestored as “\(profile.name)” [\(profile.id)]. Switch to it or open it side by side to use it.")
+            print("\nĐã khôi phục thành “\(profile.name)” [\(profile.id)]. Chuyển sang hoặc mở song song để dùng.")
             if let original = manager.statuses().first(where: { $0.profile.id != profile.id && $0.zaloUserID == info.zaloUserID && info.zaloUserID != nil }) {
-                print("Note: “\(original.profile.name)” is the same Zalo account. Don't have both open at the same time.")
+                print("Lưu ý: “\(original.profile.name)” là cùng một tài khoản Zalo. Đừng mở cả hai cùng lúc.")
             }
         case "rename":
             try need(2)
             let profile = try manager.find(rest[0])
             try manager.rename(profile.id, to: rest[1])
-            print("Renamed “\(profile.name)” to “\(rest[1])”.")
+            print("Đã đổi tên “\(profile.name)” thành “\(rest[1])”.")
         case "remove", "rm":
             try need(1)
             let profile = try manager.find(rest[0])
             let trashed = try manager.remove(profile.id)
-            print("Moved “\(profile.name)” to the Trash\(trashed.map { " (\($0.path))" } ?? ""). Put it back from the Trash to restore it.")
+            print("Đã chuyển “\(profile.name)” vào Thùng rác\(trashed.map { " (\($0.path))" } ?? ""). Lấy lại từ Thùng rác nếu cần.")
         case "paths":
-            print("Zalo app:       \(manager.layout.zaloApp.path)")
-            print("Zalo data:      \(manager.layout.liveData.path)")
-            print("Profiles:       \(manager.layout.profilesRoot.path)")
+            print("Ứng dụng Zalo:   \(manager.layout.zaloApp.path)")
+            print("Dữ liệu Zalo:    \(manager.layout.liveData.path)")
+            print("Các tài khoản:   \(manager.layout.profilesRoot.path)")
         case "help", "-h", "--help":
             print(usage)
         default:
@@ -202,10 +207,10 @@ func main() -> Int32 {
         FileHandle.standardError.write(Data((usage + "\n").utf8))
         return 2
     } catch let error as LowSpace {
-        FileHandle.standardError.write(Data("Error: \(error.message)\n".utf8))
+        FileHandle.standardError.write(Data("Lỗi: \(error.message)\n".utf8))
         return 1
     } catch {
-        FileHandle.standardError.write(Data("\nError: \(error.localizedDescription)\n".utf8))
+        FileHandle.standardError.write(Data("\nLỗi: \(error.localizedDescription)\n".utf8))
         return 1
     }
 }

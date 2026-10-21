@@ -1,19 +1,20 @@
-# Zalo Switcher for Windows
+# Zalo Switcher cho Windows
 
-Not started. Zalo Switcher runs on macOS only for now; this folder is where a native Windows app will go.
+Chưa bắt đầu. Hiện Zalo Switcher chỉ chạy trên macOS; thư mục này là nơi dành cho một ứng dụng Windows sau này.
 
-A Windows version should:
+Một bản Windows nên:
 
-- live entirely in this folder, with its own code, build scripts and tests (for example a .NET solution);
-- follow the behaviour, safety rules and file formats in [docs/how-it-works.md](../docs/how-it-works.md), so profiles and backups work the same way as on the Mac;
-- use the icon in [assets/icon](../assets/icon): `AppIcon.ico` is ready to use, and `make-icons.sh` renders it again from `AppIcon.svg`.
+- nằm trọn trong thư mục này, với mã nguồn, script build và kiểm thử riêng (ví dụ một solution .NET);
+- tuân theo cách hoạt động, quy tắc an toàn và định dạng tệp trong [docs/how-it-works.md](../docs/how-it-works.md), để hồ sơ và bản sao lưu hoạt động giống như trên máy Mac;
+- có giao diện tiếng Việt, như bản macOS;
+- dùng biểu tượng trong [assets/icon](../assets/icon): `AppIcon.ico` dùng được ngay, và `make-icons.sh` xuất lại nó từ `AppIcon.svg`.
 
-## To find out first
+## Cần tìm hiểu trước
 
-None of this has been checked on Windows yet.
+Chưa có điều nào dưới đây được kiểm tra trên Windows.
 
-- Where Zalo for Windows keeps its data, and whether everything (session, messages, photos, files) is in one folder, as on the Mac.
-- Whether Zalo can be started with another data folder, which would make switching or a second window simpler.
-- How to tell whether Zalo has a data folder open, and how to make it quit cleanly. Closing the window may only hide it in the notification area, and Windows won't rename a folder while files in it are open.
-- Renames: `MoveFileEx` without `MOVEFILE_REPLACE_EXISTING` and without `MOVEFILE_COPY_ALLOWED` fails instead of replacing something or copying across disks, which matches the "only renames" rule.
-- Where profiles should live (for example `%LOCALAPPDATA%\Zalo Profiles`), on the same disk as Zalo's data.
+- Zalo cho Windows lưu dữ liệu ở đâu, và mọi thứ (phiên đăng nhập, tin nhắn, ảnh, tệp) có nằm trong một thư mục như trên máy Mac không.
+- Có thể mở Zalo với một thư mục dữ liệu khác không; nếu được, việc chuyển hay mở cửa sổ thứ hai sẽ đơn giản hơn.
+- Làm sao biết Zalo có đang mở một thư mục dữ liệu, và làm sao cho Zalo thoát sạch sẽ. Đóng cửa sổ có thể chỉ ẩn Zalo xuống khay hệ thống, và Windows không cho đổi tên một thư mục khi có tệp bên trong đang mở.
+- Đổi tên: `MoveFileEx` không có `MOVEFILE_REPLACE_EXISTING` và không có `MOVEFILE_COPY_ALLOWED` sẽ thất bại thay vì thay thế hay sao chép sang ổ đĩa khác, đúng với quy tắc “chỉ đổi tên”.
+- Nên để hồ sơ ở đâu (ví dụ `%LOCALAPPDATA%\Zalo Profiles`), trên cùng ổ đĩa với dữ liệu Zalo.

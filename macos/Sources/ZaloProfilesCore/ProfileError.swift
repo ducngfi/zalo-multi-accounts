@@ -28,51 +28,51 @@ public enum ProfileError: LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .notFound(let query):
-            return "No profile called “\(query)”."
+            return "Không có tài khoản nào tên “\(query)”."
         case .ambiguous(let query):
-            return "More than one profile matches “\(query)”. Use the profile id instead."
+            return "Có nhiều tài khoản cùng tên “\(query)”. Hãy dùng mã của tài khoản."
         case .nameTaken(let name):
-            return "A profile called “\(name)” already exists."
+            return "Đã có tài khoản tên “\(name)”."
         case .emptyName:
-            return "Give the profile a name."
+            return "Hãy đặt tên cho tài khoản."
         case .currentDataNotSaved:
-            return "The account that is in Zalo now isn't saved as a profile yet. Save it first, so its data is kept when you switch."
+            return "Tài khoản đang mở trong Zalo chưa được lưu. Hãy lưu tài khoản này trước, để tin nhắn và tệp của nó được giữ lại khi chuyển."
         case .nothingToSave:
-            return "Zalo has no data on this Mac yet, so there is nothing to save. Add a profile instead."
+            return "Zalo chưa có dữ liệu trên máy Mac này nên chưa có gì để lưu. Hãy thêm tài khoản mới."
         case .alreadySaved(let name):
-            return "The account in Zalo now is already saved as “\(name)”."
+            return "Tài khoản đang mở trong Zalo đã được lưu với tên “\(name)”."
         case .isInMainZalo(let name):
-            return "“\(name)” is the profile open in Zalo now. Switch to another profile first."
+            return "“\(name)” đang mở trong Zalo chính. Hãy chuyển sang tài khoản khác trước."
         case .openSideBySide(let name):
-            return "“\(name)” is open in a side-by-side Zalo window. Quit that window first."
+            return "“\(name)” đang mở ở cửa sổ Zalo thứ hai. Hãy đóng cửa sổ đó trước."
         case .zaloDidNotQuit:
-            return "Zalo did not quit in time (maybe a call or a dialog is open). Quit Zalo yourself, then try again. Nothing was moved."
+            return "Zalo không thoát kịp (có thể đang có cuộc gọi hoặc một hộp thoại đang mở). Hãy tự thoát Zalo rồi thử lại. Chưa có gì bị di chuyển."
         case .zaloNotInstalled(let path):
-            return "Zalo isn't installed at \(path)."
+            return "Không tìm thấy Zalo tại \(path)."
         case .conflict(let detail):
-            return "Stopped to keep your data safe: \(detail)"
+            return "Đã dừng lại để giữ an toàn cho dữ liệu: \(detail)"
         case .moveFailed(let from, let to, let reason):
-            return "Could not move \(from) to \(to): \(reason)"
+            return "Không thể chuyển \(from) sang \(to): \(reason)"
         case .launchFailed(let reason):
-            return "Could not start Zalo: \(reason)"
+            return "Không thể mở Zalo: \(reason)"
         case .nothingToBackUp(let name):
-            return "“\(name)” has no Zalo data yet, so there is nothing to back up."
+            return "“\(name)” chưa có dữ liệu Zalo nên chưa có gì để sao lưu."
         case .notAFolder(let path):
-            return "\(path) isn't a folder that can be written to."
+            return "\(path) không phải là thư mục có thể ghi vào."
         case .badBackupFolder:
-            return "Choose a folder outside Zalo's own data and the profiles folder, for example on an external drive."
+            return "Hãy chọn một thư mục nằm ngoài dữ liệu của Zalo và thư mục tài khoản, ví dụ trên ổ cứng ngoài."
         case .notEnoughSpace(let place, let needed, let free):
-            return "Not enough free space on \(place): this needs about \(Disk.format(needed)), and \(Disk.format(free)) is free."
+            return "Không đủ dung lượng trống trên \(place): cần khoảng \(Disk.format(needed)), hiện chỉ còn \(Disk.format(free))."
         case .snapshotFailed(let reason):
-            return "Could not take a snapshot of the profile's data: \(reason). Nothing was changed."
+            return "Không thể chụp nhanh dữ liệu của tài khoản: \(reason). Chưa có gì thay đổi."
         case .copyFailed(let path, let reason):
-            return "Could not copy \(path): \(reason)"
+            return "Không thể sao chép \(path): \(reason)"
         case .copyMismatch(let what):
-            return "The copy of \(what) doesn't match the original, so it was not kept."
+            return "Bản sao của \(what) không khớp với bản gốc nên đã không được giữ lại."
         case .notABackup(let path):
-            return "\(path) isn't a Zalo Switcher backup. Choose a folder inside “Zalo Backups” that holds backup.json and ZaloData."
+            return "\(path) không phải là bản sao lưu của Zalo Switcher. Hãy chọn một thư mục bên trong “Zalo Backups” có chứa backup.json và ZaloData."
         case .cancelled:
-            return "Cancelled. The unfinished copy was removed; nothing else changed."
+            return "Đã hủy. Bản sao dở dang đã được xóa, không có gì khác thay đổi."
         }
     }
 }

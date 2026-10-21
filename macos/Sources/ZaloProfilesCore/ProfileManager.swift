@@ -59,6 +59,8 @@ public final class ProfileManager {
     }
     /// Free space on the disk holding a path; tests replace it to fake a full disk.
     public var freeSpaceProvider: (URL) -> Int64? = Disk.freeBytes(at:)
+    /// The space a data folder takes; the demo replaces it to show realistic sizes.
+    public var sizeProvider: (URL) -> Int64? = Disk.allocatedSize(of:)
 
     let zalo: ZaloControl
     let fm = FileManager.default
@@ -114,12 +116,12 @@ public final class ProfileManager {
     /// A warning when the Mac's disk is nearly full, otherwise nil.
     public func lowSpaceWarning() -> String? {
         guard let free = freeSpace(), free < lowSpaceThreshold else { return nil }
-        return "Only \(Disk.format(free)) free on this Mac. Zalo needs room to save messages and photos; free up space before adding or opening more accounts."
+        return "Máy Mac chỉ còn trống \(Disk.format(free)). Zalo cần chỗ để lưu tin nhắn và ảnh; hãy giải phóng dung lượng trước khi thêm hoặc mở thêm tài khoản."
     }
 
     /// The space a profile's data takes on disk (nil for a profile that has never been opened).
     public func dataSize(of status: ProfileStatus) -> Int64? {
-        status.dataFolder.flatMap(Disk.allocatedSize(of:))
+        status.dataFolder.flatMap(sizeProvider)
     }
 
     public func status(of id: String) -> ProfileStatus? {
@@ -200,24 +202,24 @@ public final class ProfileManager {
         if zalo.pidUsing(dataFolder: layout.parkedData(id)) != nil { throw ProfileError.openSideBySide(target.name) }
 
         if mainZaloPID() != nil {
-            progress("Quitting Zalo…")
+            progress("Đang thoát Zalo…")
             try zalo.quit(dataFolder: layout.liveData, timeout: quitTimeout)
             if mainZaloPID() != nil { throw ProfileError.zaloDidNotQuit }
         }
 
         var parked: String?
         if case .profile(let current) = slot {
-            progress("Putting away \(loadProfile(current)?.name ?? current)…")
+            progress("Đang cất dữ liệu của \(loadProfile(current)?.name ?? current)…")
             let destination = layout.parkedData(current)
             if exists(destination) {
-                throw ProfileError.conflict("\(destination.path) already exists, so \(layout.liveData.path) was left where it is.")
+                throw ProfileError.conflict("\(destination.path) đã tồn tại, nên \(layout.liveData.path) được giữ nguyên.")
             }
             try fm.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
             try move(layout.liveData, to: destination)
             parked = current
         }
 
-        progress("Bringing in \(target.name)…")
+        progress("Đang đưa \(target.name) vào Zalo…")
         let source = layout.parkedData(id)
         if isDirectory(source) {
             do {
@@ -237,7 +239,7 @@ public final class ProfileManager {
         touch(target)
 
         if launch {
-            progress("Starting Zalo…")
+            progress("Đang mở Zalo…")
             try zalo.launchMain(app: layout.zaloApp)
         }
     }
@@ -355,7 +357,7 @@ public final class ProfileManager {
     /// disks (rename(2) fails instead), so a half-finished move can't happen.
     func move(_ from: URL, to: URL) throws {
         guard renamex_np(from.path, to.path, UInt32(RENAME_EXCL)) == 0 else {
-            let reason = errno == EEXIST ? "something is already there" : String(cString: strerror(errno))
+            let reason = errno == EEXIST ? "đã có thư mục khác ở đó" : String(cString: strerror(errno))
             throw ProfileError.moveFailed(from: from.path, to: to.path, reason: reason)
         }
     }
