@@ -29,7 +29,30 @@ open -n "build/Zalo Switcher.app" --args --demo    # chạy thử với bốn t�
 
 1. Tăng `VERSION` và `BUILD` ở đầu `scripts/build.sh`, và `Version` trong [`windows/Directory.Build.props`](../windows/Directory.Build.props) lên cùng số đó.
 2. Chạy `scripts/release.sh`.
-3. Commit, push, và đăng các tệp: `gh release create v<phiên bản> build/release/* --title "Zalo Switcher <phiên bản>" --notes-file <ghi chú>`. Ghi chú nói về cả hai bản; vài phút sau, GitHub Actions tự thêm các tệp Windows vào bản phát hành này (xem [windows/README.md](../windows/README.md#phát-hành)).
+3. Commit, push, và đăng các tệp: `gh release create v<phiên bản> build/release/* --title "Zalo Switcher <phiên bản>" --notes-file <ghi chú>`, với ghi chú theo [mẫu bên dưới](#ghi-chú-phát-hành); vài phút sau, GitHub Actions tự thêm các tệp Windows vào bản phát hành này (xem [windows/README.md](../windows/README.md#phát-hành)).
+4. Sửa ghi chú của bản trước còn vài dòng: “Bản cũ. Hãy dùng [bản mới nhất](https://github.com/ducngfi/zalo-multi-accounts/releases/latest).”, một câu nói bản đó có gì, và tên tệp cần tải.
+
+### Ghi chú phát hành
+
+Giữ ghi chú ngắn, để người dùng thấy ngay mục **Assets** ngay bên dưới. Hướng dẫn cài, cách vượt cảnh báo bảo mật, ảnh minh họa và giới hạn đã có trong [README chính](../README.md), nên chỉ dẫn liên kết tới đó, không chép lại. Mẫu (thay `X.Y.Z`):
+
+```markdown
+<Một câu: ứng dụng làm gì.> Có cho Mac và Windows.
+
+| Máy của bạn | Tải tệp này trong **Assets** ngay bên dưới |
+|---|---|
+| **Mac** (macOS 13 trở lên) | **Zalo-Switcher-X.Y.Z-macOS.zip** |
+| **Windows** (Windows 10 trở lên) | **ZaloSwitcher-Setup-X.Y.Z.exe** |
+
+Cách cài và cách mở lần đầu: [Mac](https://github.com/ducngfi/zalo-multi-accounts#cài-đặt) · [Windows](https://github.com/ducngfi/zalo-multi-accounts#windows). Các tệp còn lại không bắt buộc: công cụ dòng lệnh, bản Windows chạy không cần cài, và mã kiểm tra.
+
+**Có gì mới**
+
+- <Tối đa ba hoặc bốn dòng, mỗi dòng một thay đổi người dùng thấy được.>
+- Nâng cấp từ bản cũ: các tài khoản đã lưu vẫn giữ nguyên.
+
+<sub>Dự án độc lập, không liên kết với Zalo hay VNG. Bạn tự chịu rủi ro khi sử dụng. Xem [giới hạn](https://github.com/ducngfi/zalo-multi-accounts#giới-hạn-và-vì-sao-có-các-giới-hạn-đó) trước khi dùng.</sub>
+```
 
 ## Mã nguồn
 
