@@ -1,7 +1,7 @@
 <Project>
   <!-- Shared by every project in windows/. Bump Version for a release (see README.md). -->
   <PropertyGroup>
-    <Version>0.1.0</Version>
+    <Version>1.2.0</Version>
     <Product>Zalo Switcher</Product>
     <Company>Zalo Switcher</Company>
     <Copyright>MIT License</Copyright>

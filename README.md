@@ -312,7 +312,7 @@ Ngày 21/10/2026, với bản 1.2.0, một tài khoản được mở rồi đó
 
 Bản Windows dùng với Zalo cho máy tính bản Windows, và làm được những việc như bản macOS: mở mỗi tài khoản trong một cửa sổ Zalo riêng, đặt Zalo chính, sao lưu và khôi phục, cùng công cụ dòng lệnh `zalo-profiles.exe` với các lệnh như trên.
 
-**Cài đặt.** Tải `ZaloSwitcher-Setup-<phiên bản>.exe` từ trang [Releases](../../releases) rồi mở nó. Ứng dụng được cài cho riêng tài khoản Windows của bạn (không cần quyền quản trị, không cần cài .NET), có trong menu Start, và gỡ được trong **Cài đặt → Ứng dụng**; gỡ cài đặt không xóa Zalo hay các tài khoản đã lưu. Muốn chạy mà không cài, tải `ZaloSwitcher-<phiên bản>-windows-x64.zip`, giải nén rồi mở `ZaloSwitcher.exe`. Các tệp không được ký số, nên ở lần mở đầu tiên Windows SmartScreen có thể hiện “Windows đã bảo vệ máy tính của bạn”: bấm **Thông tin khác** rồi **Vẫn chạy**. Muốn tự build, xem [windows/README.md](windows/README.md).
+**Cài đặt.** Tải `ZaloSwitcher-Setup-<phiên bản>.exe` từ [bản phát hành mới nhất](https://github.com/ducngfi/zalo-multi-accounts/releases/latest) rồi mở nó. Ứng dụng được cài cho riêng tài khoản Windows của bạn (không cần quyền quản trị, không cần cài .NET), có trong menu Start, và gỡ được trong **Cài đặt → Ứng dụng**; gỡ cài đặt không xóa Zalo hay các tài khoản đã lưu. Muốn chạy mà không cài, tải `ZaloSwitcher-<phiên bản>-windows-x64.zip`, giải nén rồi mở `ZaloSwitcher.exe`. Các tệp không được ký số, nên ở lần mở đầu tiên Windows SmartScreen có thể hiện “Windows đã bảo vệ máy tính của bạn”: bấm **Thông tin khác** rồi **Vẫn chạy**. Muốn tự build, xem [windows/README.md](windows/README.md).
 
 Những chỗ khác bản macOS:
 

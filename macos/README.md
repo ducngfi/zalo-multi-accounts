@@ -27,9 +27,9 @@ open -n "build/Zalo Switcher.app" --args --demo    # chạy thử với bốn t�
 
 ## Phát hành
 
-1. Tăng `VERSION` và `BUILD` ở đầu `scripts/build.sh`.
+1. Tăng `VERSION` và `BUILD` ở đầu `scripts/build.sh`, và `Version` trong [`windows/Directory.Build.props`](../windows/Directory.Build.props) lên cùng số đó.
 2. Chạy `scripts/release.sh`.
-3. Commit, push, và đăng các tệp: `gh release create v<phiên bản> build/release/* --title "Zalo Switcher <phiên bản>" --notes-file <ghi chú>`.
+3. Commit, push, và đăng các tệp: `gh release create v<phiên bản> build/release/* --title "Zalo Switcher <phiên bản>" --notes-file <ghi chú>`. Ghi chú nói về cả hai bản; vài phút sau, GitHub Actions tự thêm các tệp Windows vào bản phát hành này (xem [windows/README.md](../windows/README.md#phát-hành)).
 
 ## Mã nguồn
 

@@ -1,17 +1,27 @@
-# Tests, builds and packages the Windows app on a GitHub Windows machine with windows\scripts\release.ps1.
-#   Push a tag windows-v<version>   the version must match Version in windows/Directory.Build.props; the
-#                                   installer, zip and checksums go into a draft release of that tag
-#   Run it by hand                  Actions → Windows release → Run workflow: only builds, and keeps the
-#                                   files as the run's artifact
+# Tests, builds and packages the Windows app on a GitHub Windows machine with windows\scripts\release.ps1,
+# and adds the installer, zip and checksums to the release v<version>, next to the macOS files.
+#   Push a tag v<version>           happens on its own when macos/README.md's gh release create makes the
+#                                   release; the version must match windows/Directory.Build.props and
+#                                   macos/scripts/build.sh. With no release for the tag yet, makes a draft
+#   Run it by hand                  Actions → Windows release → Run workflow: builds the chosen branch; with
+#                                   a tag (v1.2.0), also adds the files to that tag's release
 name: Windows release
 
 on:
   push:
-    tags: ['windows-v*']
+    tags: ['v*']
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release to add the Windows files to, e.g. v1.2.0 (empty: only build)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
+
+env:
+  TAG: ${{ inputs.tag || (github.ref_type == 'tag' && github.ref_name) || '' }}
 
 jobs:
   release:
@@ -23,12 +33,13 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Check the tag matches the version
-        if: github.ref_type == 'tag'
+      - name: Check the tag matches the versions
+        if: env.TAG != ''
         run: |
-          $version = ([xml](Get-Content windows\Directory.Build.props)).Project.PropertyGroup.Version
-          if ($env:GITHUB_REF_NAME -ne "windows-v$version") {
-            throw "Tag $env:GITHUB_REF_NAME does not match Version $version in windows\Directory.Build.props."
+          $windows = ([xml](Get-Content windows\Directory.Build.props)).Project.PropertyGroup.Version
+          $macos = (Select-String -Path macos\scripts\build.sh -Pattern '^VERSION="(.+?)"').Matches[0].Groups[1].Value
+          if ($env:TAG -ne "v$windows" -or $env:TAG -ne "v$macos") {
+            throw "Tag $env:TAG must match both versions: Windows $windows (windows\Directory.Build.props), macOS $macos (macos\scripts\build.sh)."
           }
 
       - name: Test, build and package
@@ -40,44 +51,24 @@ jobs:
           path: windows/build/release/
           if-no-files-found: error
 
-      - name: Attach the files to a draft release
-        if: github.ref_type == 'tag'
+      - name: Add the files to the release
+        if: env.TAG != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = $env:GITHUB_REF_NAME
-          $version = $tag -replace '^windows-v', ''
           $files = Get-ChildItem windows\build\release | ForEach-Object FullName
 
-          gh release view $tag *> $null
+          gh release view $env:TAG *> $null
           if ($LASTEXITCODE -eq 0) {
-            # The release exists already (made by hand, or by an earlier run): replace its Windows files.
-            gh release upload $tag @files --clobber
+            # The usual case: the release with the macOS files exists. Add (or replace) the Windows files.
+            gh release upload $env:TAG @files --clobber
+            $done = "Added the Windows files to release **$env:TAG**."
           } else {
-            # A draft, so you write the notes before anyone sees it. Never "latest": the macOS install steps
-            # link to releases/latest and must keep finding the macOS app there.
-            $text = @'
-          Zalo Switcher cho Windows VERSION.
-
-          > **Không liên kết với Zalo.** Đây là dự án độc lập, không chính thức, không do Zalo hay VNG làm ra, bảo trợ hay hỗ trợ.
-          >
-          > **Bạn tự chịu rủi ro khi sử dụng.** Zalo Switcher mở Zalo trên các thư mục chứa toàn bộ tin nhắn, ảnh và tệp Zalo của bạn, và đổi tên các thư mục đó khi bạn đổi Zalo chính. Phần mềm không có bảo hành, và tác giả không chịu trách nhiệm nếu bạn mất dữ liệu hay mất quyền truy cập tài khoản. Hãy sao lưu dữ liệu Zalo trước khi bắt đầu.
-
-          ## Tải về
-
-          - **ZaloSwitcher-Setup-VERSION.exe**: tệp cài đặt. Windows 10 trở lên, x64; không cần quyền quản trị, không cần cài .NET.
-          - **ZaloSwitcher-VERSION-windows-x64.zip**: ứng dụng và công cụ dòng lệnh `zalo-profiles.exe`, để chạy mà không cài.
-          - **SHA256SUMS-windows.txt**: mã kiểm tra, so với `Get-FileHash <tệp>` trong PowerShell.
-
-          Các tệp không được ký số, nên ở lần mở đầu tiên Windows SmartScreen có thể hiện “Windows đã bảo vệ máy tính của bạn”: bấm **Thông tin khác** rồi **Vẫn chạy**.
-          '@
-            $notes = Join-Path $env:RUNNER_TEMP 'notes.md'
-            $text.Replace('VERSION', $version) | Set-Content -Encoding utf8 $notes
-            gh release create $tag @files --draft --latest=false --verify-tag `
-              --title "Zalo Switcher cho Windows $version" --notes-file $notes
+            # The tag was pushed with no release: a draft, so the notes and macOS files go in before anyone sees it.
+            $version = $env:TAG -replace '^v', ''
+            gh release create $env:TAG @files --draft --verify-tag --title "Zalo Switcher $version" `
+              --notes "Bản Windows: tải **ZaloSwitcher-Setup-$version.exe**."
+            $done = "Made draft release **$env:TAG** with the Windows files. Add the notes and the macOS files, then publish it."
           }
-          if ($LASTEXITCODE -ne 0) { throw "Could not attach the files to the release $tag." }
-
-          "Draft release **$tag** has the Windows files. Write the notes, then publish it with " +
-            "**Set as the latest release** unticked, so releases/latest keeps pointing at the macOS app." |
-            Add-Content $env:GITHUB_STEP_SUMMARY
+          if ($LASTEXITCODE -ne 0) { throw "Could not add the files to the release $env:TAG." }
+          $done | Add-Content $env:GITHUB_STEP_SUMMARY
