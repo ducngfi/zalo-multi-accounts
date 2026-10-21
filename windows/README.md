@@ -42,9 +42,12 @@ $env:ZALO_INTEGRATION = "1"; dotnet test tests\ZaloProfiles.Core.Tests --filter 
 
 ## Phát hành
 
-1. Tăng `Version` trong `Directory.Build.props`.
-2. Chạy `scripts\release.ps1`.
-3. Commit, push, và đăng các tệp trong `build\release\` vào bản phát hành GitHub.
+1. Tăng `Version` trong `Directory.Build.props`, commit và push.
+2. Tạo và push thẻ `windows-v<phiên bản>`, ví dụ `git tag windows-v0.1.0 && git push origin windows-v0.1.0`.
+3. GitHub Actions ([`.github/workflows/windows-release.yml`](../.github/workflows/windows-release.yml)) chạy `scripts\release.ps1` trên một máy Windows của GitHub, rồi đính tệp cài đặt, tệp zip và mã kiểm tra vào một bản phát hành nháp của thẻ đó.
+4. Viết ghi chú rồi đăng bản nháp. Bỏ chọn **Set as the latest release**, để liên kết “bản phát hành mới nhất” của bản macOS vẫn trỏ tới bản macOS.
+
+Muốn build thử mà không phát hành, chạy workflow bằng tay (Actions → Windows release → Run workflow): các tệp nằm trong mục Artifacts của lần chạy đó. Trên máy Windows của bạn, `scripts\release.ps1` vẫn build mọi thứ vào `build\release\`.
 
 ## Mã nguồn
 
