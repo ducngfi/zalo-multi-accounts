@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The installer targets .NET Framework 4.8, which every Windows 10 and 11 has, so it needs no runtime
+       of its own: it is the app (in payload.zip, built by scripts\build.ps1) plus a few hundred KB. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <AssemblyName>ZaloSwitcherSetup</AssemblyName>
+    <RootNamespace>ZaloSwitcherSetup</RootNamespace>
+    <ApplicationIcon>..\..\..\assets\icon\AppIcon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <PayloadZip Condition="'$(PayloadZip)' == ''">..\..\build\payload.zip</PayloadZip>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Shared\Installation.cs" Link="Installation.cs" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="Microsoft.CSharp" />
+    <EmbeddedResource Include="$(PayloadZip)" LogicalName="payload.zip" Condition="Exists('$(PayloadZip)')" />
+    <EmbeddedResource Include="..\..\..\assets\icon\AppIcon.ico" LogicalName="AppIcon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

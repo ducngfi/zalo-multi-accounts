@@ -7,7 +7,7 @@ Dùng nhiều tài khoản Zalo cùng lúc trên một máy Mac. Mỗi tài kho�
 <p align="center"><img src="docs/screenshots/song-song.png" width="860" alt="Hai tài khoản Zalo mở cùng lúc, mỗi tài khoản một cửa sổ, với cửa sổ Zalo Switcher ở giữa"></p>
 <p align="center"><sub>Minh họa với dữ liệu giả lập.</sub></p>
 
-**Chỉ dành cho macOS** (macOS 13 trở lên). Hiện chưa có bản Windows; dự án được sắp xếp để có thể thêm bản Windows sau này (xem [Cấu trúc dự án](#cấu-trúc-dự-án)).
+Dành cho **macOS** (macOS 13 trở lên) và **Windows** (Windows 10 trở lên). Phần lớn README này nói về bản macOS; bản Windows có cùng chức năng và cùng quy tắc an toàn, và những chỗ khác nằm trong mục [Windows](#windows).
 
 Có hai cách dùng, chung một mã nguồn:
 
@@ -31,6 +31,7 @@ Có hai cách dùng, chung một mã nguồn:
 - [Dung lượng ổ đĩa](#dung-lượng-ổ-đĩa)
 - [Sao lưu và khôi phục](#sao-lưu-và-khôi-phục)
 - [Nhiều cửa sổ Zalo cùng lúc](#nhiều-cửa-sổ-zalo-cùng-lúc)
+- [Windows](#windows)
 - [Lưu ý thêm](#lưu-ý-thêm)
 - [Cấu trúc dự án](#cấu-trúc-dự-án)
 
@@ -304,6 +305,28 @@ Giới hạn đã biết:
 
 Ngày 21/10/2026, với bản 1.2.0, một tài khoản được mở rồi đóng bên cạnh Zalo chính hơn mười lần, kể cả bằng **Mở tất cả**. Zalo chính không bị khởi động lại lần nào. Tài khoản thử đã bị đăng xuất từ trước nên mỗi lần đều mở ra ở màn hình đăng nhập, và ở màn hình đó Zalo nhiều lần không thoát hẳn khi được đóng. Với cách xử lý ở trên, những lần đóng sau cùng xong trong 1 đến 5 giây.
 
+## Windows
+
+<p align="center"><img src="docs/screenshots/cua-so-chinh-windows.png" width="640" alt="Cửa sổ Zalo Switcher trên Windows với bốn tài khoản giả lập"></p>
+<p align="center"><sub>Minh họa với dữ liệu giả lập.</sub></p>
+
+Bản Windows dùng với Zalo cho máy tính bản Windows, và làm được những việc như bản macOS: mở mỗi tài khoản trong một cửa sổ Zalo riêng, đặt Zalo chính, sao lưu và khôi phục, cùng công cụ dòng lệnh `zalo-profiles.exe` với các lệnh như trên.
+
+**Cài đặt.** Tải `ZaloSwitcher-Setup-<phiên bản>.exe` từ trang [Releases](../../releases) rồi mở nó. Ứng dụng được cài cho riêng tài khoản Windows của bạn (không cần quyền quản trị, không cần cài .NET), có trong menu Start, và gỡ được trong **Cài đặt → Ứng dụng**; gỡ cài đặt không xóa Zalo hay các tài khoản đã lưu. Muốn chạy mà không cài, tải `ZaloSwitcher-<phiên bản>-windows-x64.zip`, giải nén rồi mở `ZaloSwitcher.exe`. Các tệp không được ký số, nên ở lần mở đầu tiên Windows SmartScreen có thể hiện “Windows đã bảo vệ máy tính của bạn”: bấm **Thông tin khác** rồi **Vẫn chạy**. Muốn tự build, xem [windows/README.md](windows/README.md).
+
+Những chỗ khác bản macOS:
+
+- Biểu tượng của ứng dụng nằm ở khay hệ thống (góc phải thanh tác vụ, có thể phải bấm mũi tên ^ cạnh đồng hồ), thay cho thanh menu và Dock. Đóng cửa sổ Zalo Switcher chỉ ẩn nó xuống khay; chọn **Thoát Zalo Switcher** trong menu của biểu tượng để thoát.
+- “Zalo chính” là tài khoản mở ra khi bạn bấm biểu tượng Zalo trên màn hình nền, thanh tác vụ hoặc menu Start, hoặc khi Zalo tự mở cùng Windows.
+- **Sao lưu:** Windows không có bản chụp nhanh như APFS, nên cửa sổ Zalo của tài khoản đang sao lưu đóng trong suốt lúc sao chép (vài phút với tài khoản nhiều dữ liệu), rồi tự mở lại. Các tài khoản khác vẫn chạy.
+- **Tin nhắn lưu ở ổ khác:** Zalo cho Windows cho phép chuyển nơi lưu tin nhắn, ảnh và tệp sang ổ khác. Tài khoản như vậy vẫn mở và đổi được bình thường, nhưng Zalo Switcher không sao lưu được nó (tin nhắn không nằm trong thư mục dữ liệu), và không mở cùng lúc hai tài khoản lưu tin nhắn chung một chỗ.
+- Nếu thư mục AppData của Windows đã bị chuyển đi chỗ khác (hay gặp ở máy công ty), Windows không cho mở Zalo trong cửa sổ riêng; bạn vẫn đổi qua lại từng tài khoản được bằng **Đặt làm Zalo chính**.
+- Dữ liệu của các tài khoản đã cất nằm trong `%LOCALAPPDATA%\Zalo Profiles\<mã>\AppData\Roaming\ZaloData`; Zalo chính vẫn ở `%APPDATA%\ZaloData`.
+
+**Đã thử những gì.** Ngày 21/10/2026, với Zalo 26.10.11 trên Windows 10, bên cạnh một Zalo chính đang đăng nhập: một Zalo thứ hai mở trên thư mục dữ liệu riêng, được ứng dụng nhận ra, đưa lên trước, và thoát sạch trong khoảng một giây khi được đóng; Zalo chính không bị khởi động lại, và thư mục dữ liệu của nó không bị đụng tới. Cùng ngày, một tài khoản thứ hai được thêm và đăng nhập trong cửa sổ riêng, chạy cùng Zalo chính, với dữ liệu nằm trong thư mục tài khoản của nó. **Chưa thử:** đóng rồi mở lại tài khoản đó, dùng lâu dài, đặt Zalo chính và sao lưu với tài khoản thật, và gọi điện. Hãy sao lưu thư mục `%APPDATA%\ZaloData` (khi Zalo đã thoát) trước khi thử.
+
+Cách hoạt động trên Windows có trong mục [Trên Windows](docs/how-it-works.md#trên-windows) của tài liệu kỹ thuật.
+
 ## Lưu ý thêm
 
 - Tệp nhận được của mọi tài khoản đều vào thư mục Tải về như bình thường.
@@ -322,13 +345,13 @@ docs/screenshots/make-screenshots.sh
 
 ```
 macos/              ứng dụng macOS và công cụ dòng lệnh (Swift package)
-windows/            dành cho ứng dụng Windows sau này (chưa bắt đầu)
+windows/            ứng dụng Windows và công cụ dòng lệnh (.NET 8, WPF)
 docs/               cách hoạt động của tài khoản, giống nhau trên mọi nền tảng
 docs/screenshots/   ảnh minh họa của README và cách tạo lại chúng
 assets/icon/        biểu tượng ứng dụng: bản gốc SVG và các biểu tượng đã xuất cho macOS và Windows
 ```
 
-Mỗi nền tảng giữ mã nguồn, script build và kiểm thử trong thư mục riêng. Phần dùng chung là cách hoạt động và định dạng tệp trong [docs/how-it-works.md](docs/how-it-works.md), cùng biểu tượng trong `assets/icon/`. Cách build và kiểm thử bản macOS có trong [macos/README.md](macos/README.md).
+Mỗi nền tảng giữ mã nguồn, script build và kiểm thử trong thư mục riêng. Phần dùng chung là cách hoạt động và định dạng tệp trong [docs/how-it-works.md](docs/how-it-works.md), cùng biểu tượng trong `assets/icon/`. Cách build và kiểm thử có trong [macos/README.md](macos/README.md) và [windows/README.md](windows/README.md).
 
 ## Giấy phép
 

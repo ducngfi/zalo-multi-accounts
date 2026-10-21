@@ -1,0 +1,194 @@
+<Window x:Class="ZaloSwitcher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ZaloSwitcher"
+        Title="Zalo Switcher" Width="760" Height="600" MinWidth="640" MinHeight="460"
+        WindowStartupLocation="CenterScreen" Icon="AppIcon.ico"
+        Background="{StaticResource WindowBrush}" FontFamily="Segoe UI" FontSize="14"
+        Foreground="{StaticResource TextBrush}" UseLayoutRounding="True">
+    <DockPanel>
+        <!-- Header: how many accounts are open, and the main actions. -->
+        <Border DockPanel.Dock="Top" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
+                Padding="20,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Image Source="AppIcon.ico" Width="44" Height="44" Margin="0,0,14,0" RenderOptions.BitmapScalingMode="HighQuality" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Headline}" FontSize="19" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Subheadline}" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,2,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Split button: add, or restore from a backup. -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,8,0" IsEnabled="{Binding IsIdle}">
+                        <Button Style="{StaticResource PrimaryButton}" Click="AddAccount" Padding="12,7,10,7">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE710;" FontFamily="{StaticResource IconFont}" FontSize="12" VerticalAlignment="Center" Margin="0,0,7,0" />
+                                <TextBlock Text="Thêm tài khoản" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="AddMenuButton" Style="{StaticResource PrimaryButton}" Click="ShowAddMenu" Padding="7,7" Margin="1,0,0,0"
+                                ToolTip="Thêm tài khoản hoặc khôi phục từ bản sao lưu">
+                            <TextBlock Text="&#xE70D;" FontFamily="{StaticResource IconFont}" FontSize="10" />
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Thêm tài khoản mới…" Click="AddAccount" />
+                                    <MenuItem Header="Khôi phục từ bản sao lưu…" Click="Restore" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,8,0" IsEnabled="{Binding IsIdle}">
+                        <Button Style="{StaticResource SecondaryButton}" Click="OpenAll" Padding="12,7,10,7">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8A9;" FontFamily="{StaticResource IconFont}" FontSize="13" VerticalAlignment="Center" Margin="0,0,7,0" />
+                                <TextBlock Text="Mở tất cả" />
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="AllMenuButton" Style="{StaticResource SecondaryButton}" Click="ShowAllMenu" Padding="7,7" Margin="-1,0,0,0">
+                            <TextBlock Text="&#xE70D;" FontFamily="{StaticResource IconFont}" FontSize="10" />
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem x:Name="OpenAllItem" Header="Mở mọi tài khoản đã đăng nhập" Click="OpenAll" />
+                                    <MenuItem x:Name="CloseAllItem" Header="Đóng mọi cửa sổ Zalo…" Click="CloseAll" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                    </StackPanel>
+                    <Button Style="{StaticResource GhostButton}" Click="ShowSettings" ToolTip="Cài đặt">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE713;" FontFamily="{StaticResource IconFont}" FontSize="15" VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <TextBlock Text="Cài đặt" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="20">
+                <!-- Notices. -->
+                <Border Style="{StaticResource Card}" Background="{StaticResource AccentSoftBrush}" BorderThickness="0" Margin="0,0,0,12"
+                        Visibility="{Binding IsDemo, Converter={StaticResource Visible}}">
+                    <DockPanel>
+                        <TextBlock Text="&#xE946;" FontFamily="{StaticResource IconFont}" Foreground="{StaticResource AccentBrush}" Margin="0,2,10,0" />
+                        <TextBlock TextWrapping="Wrap" Text="Bản demo với dữ liệu giả lập. Mọi thao tác chỉ diễn ra trong một thư mục tạm, không chạm tới Zalo thật trên máy này." />
+                    </DockPanel>
+                </Border>
+                <Border Style="{StaticResource Card}" Background="{StaticResource OrangeSoftBrush}" BorderThickness="0" Margin="0,0,0,12"
+                        Visibility="{Binding IsUnsaved, Converter={StaticResource Visible}}">
+                    <DockPanel>
+                        <TextBlock Text="&#xE7BA;" FontFamily="{StaticResource IconFont}" Foreground="{StaticResource OrangeBrush}" Margin="0,2,10,0" />
+                        <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryButton}" Content="Lưu tài khoản này…" Click="SaveCurrent"
+                                VerticalAlignment="Center" Margin="12,0,0,0" IsEnabled="{Binding IsIdle}" />
+                        <TextBlock TextWrapping="Wrap" Text="Zalo chính đang giữ một tài khoản chưa được lưu nên tài khoản đó chưa có trong danh sách. Hãy lưu để quản lý, sao lưu và mở nó cùng các tài khoản khác." />
+                    </DockPanel>
+                </Border>
+                <Border Style="{StaticResource Card}" Background="{StaticResource RedSoftBrush}" BorderThickness="0" Margin="0,0,0,12"
+                        Visibility="{Binding LowSpace, Converter={StaticResource Visible}}">
+                    <DockPanel>
+                        <TextBlock Text="&#xE7BA;" FontFamily="{StaticResource IconFont}" Foreground="{StaticResource RedBrush}" Margin="0,2,10,0" />
+                        <TextBlock TextWrapping="Wrap" Text="{Binding LowSpaceText}" />
+                    </DockPanel>
+                </Border>
+                <Border x:Name="BusyBanner" Style="{StaticResource Card}" Background="{StaticResource AccentSoftBrush}" BorderThickness="0" Margin="0,0,0,12"
+                        Visibility="Collapsed">
+                    <DockPanel>
+                        <ProgressBar IsIndeterminate="True" Width="18" Height="4" Margin="0,0,12,0" VerticalAlignment="Center" />
+                        <TextBlock TextWrapping="Wrap" Text="{Binding Busy}" />
+                    </DockPanel>
+                </Border>
+                <Border x:Name="CopyBanner" Style="{StaticResource Card}" Background="{StaticResource AccentSoftBrush}" BorderThickness="0" Margin="0,0,0,12"
+                        Visibility="Collapsed">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock Text="&#xEDA2;" FontFamily="{StaticResource IconFont}" Margin="0,2,10,0" />
+                            <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryButton}" Content="Hủy" Click="CancelCopy" Padding="12,4" />
+                            <TextBlock Text="{Binding Copying}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        </DockPanel>
+                        <ProgressBar Value="{Binding CopyProgress, Mode=OneWay}" Maximum="1" Height="6" Margin="0,10,0,0"
+                                     Foreground="{StaticResource AccentBrush}" Background="#D5DEEA" BorderThickness="0" />
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="Chưa có tài khoản nào. Bấm “Thêm tài khoản” để bắt đầu." Foreground="{StaticResource SecondaryTextBrush}"
+                           HorizontalAlignment="Center" Margin="0,40"
+                           Visibility="{Binding HasNoAccounts, Converter={StaticResource Visible}}" />
+
+                <!-- The accounts. -->
+                <ItemsControl ItemsSource="{Binding Rows}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type local:AccountRow}">
+                            <Border x:Name="Row" Style="{StaticResource Card}" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <!-- Avatar with initials, and a green dot while open. -->
+                                    <Grid Width="42" Height="42" Margin="0,0,14,0" VerticalAlignment="Center">
+                                        <Ellipse Fill="{Binding AvatarBrush}" />
+                                        <TextBlock Text="{Binding Initials}" Foreground="White" FontWeight="SemiBold" FontSize="15"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <Ellipse Width="13" Height="13" Fill="{StaticResource GreenBrush}" Stroke="White" StrokeThickness="2"
+                                                 HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                                 Visibility="{Binding IsOpen, Converter={StaticResource Visible}}" />
+                                    </Grid>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                            <Grid Margin="8,0,0,0" VerticalAlignment="Center">
+                                                <Border Background="{Binding StateBrush}" Opacity="0.13" CornerRadius="9" />
+                                                <TextBlock Text="{Binding StateText}" Foreground="{Binding StateBrush}" FontSize="12" FontWeight="SemiBold" Margin="8,1,8,2" />
+                                            </Grid>
+                                            <Grid Margin="6,0,0,0" VerticalAlignment="Center" Visibility="{Binding IsMain, Converter={StaticResource Visible}}"
+                                                  ToolTip="Tài khoản mở ra khi bạn bấm biểu tượng Zalo trên màn hình nền, thanh tác vụ hoặc menu Start, hoặc khi Zalo tự mở cùng Windows.">
+                                                <Border Background="{StaticResource AccentBrush}" Opacity="0.13" CornerRadius="9" />
+                                                <TextBlock Text="Zalo chính" Foreground="{StaticResource AccentBrush}" FontSize="12" FontWeight="SemiBold" Margin="8,1,8,2" />
+                                            </Grid>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Details}" FontSize="13" Foreground="{StaticResource SecondaryTextBrush}"
+                                                   TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                                        <Button Style="{StaticResource SecondaryButton}" Content="Hiện" Command="{Binding Open}" Margin="0,0,8,0"
+                                                Visibility="{Binding IsOpen, Converter={StaticResource Visible}}" />
+                                        <Button Style="{StaticResource SecondaryButton}" Content="Đóng" Command="{Binding Close}" Margin="0,0,8,0"
+                                                Visibility="{Binding IsOpen, Converter={StaticResource Visible}}" />
+                                        <Button Style="{StaticResource PrimaryButton}" Content="{Binding PrimaryText}" Command="{Binding Open}" Margin="0,0,8,0"
+                                                Visibility="{Binding IsClosed, Converter={StaticResource Visible}}" />
+                                        <Button Style="{StaticResource GhostButton}" Click="ShowRowMenu" ToolTip="Thêm">
+                                            <TextBlock Text="&#xE712;" FontFamily="{StaticResource IconFont}" FontSize="15" />
+                                            <Button.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Sao lưu…" Command="{Binding BackUp}" />
+                                                    <MenuItem Header="Đổi tên…" Command="{Binding Rename}" />
+                                                    <MenuItem Header="Đặt làm Zalo chính…" Command="{Binding MakeMain}" />
+                                                    <Separator />
+                                                    <MenuItem Header="Chuyển vào Thùng rác…" Command="{Binding Remove}" />
+                                                </ContextMenu>
+                                            </Button.ContextMenu>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding IsOpen}" Value="True">
+                                    <Setter TargetName="Row" Property="BorderBrush" Value="{StaticResource OpenBorderBrush}" />
+                                    <Setter TargetName="Row" Property="BorderThickness" Value="1.5" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock TextWrapping="Wrap" FontSize="12.5" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,4,0,0" LineHeight="19"
+                           Text="Mỗi tài khoản chạy trong một cửa sổ Zalo riêng, cùng lúc với các tài khoản khác, và không cần đăng nhập lại. “Zalo chính” là tài khoản mở ra khi bạn bấm biểu tượng Zalo trên màn hình nền hoặc thanh tác vụ. Gọi thoại và gọi video chỉ ổn định ở một cửa sổ Zalo tại một thời điểm." />
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

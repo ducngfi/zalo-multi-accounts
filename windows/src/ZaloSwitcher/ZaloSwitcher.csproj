@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <!-- Only for the notification-area icon (NotifyIcon). -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>ZaloSwitcher</AssemblyName>
+    <RootNamespace>ZaloSwitcher</RootNamespace>
+    <ApplicationIcon>..\..\..\assets\icon\AppIcon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- DPI awareness is set in app.manifest, the WPF way; the WinForms analyzer only knows its own. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- WinForms brings its own global usings that clash with WPF's. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="..\..\..\assets\icon\AppIcon.ico" Link="AppIcon.ico" />
+    <Compile Include="..\Shared\Installation.cs" Link="Installation.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ZaloProfiles.Core\ZaloProfiles.Core.csproj" />
+  </ItemGroup>
+</Project>
